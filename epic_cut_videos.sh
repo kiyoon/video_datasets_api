@@ -2,7 +2,7 @@
 
 if [ $# -lt 3 ]
 then
-	echo "usage: $0 [input_dir (either train or test)] [output_dir] [action_labels.csv]"
+	echo "usage: $0 [input_dir (should be .../videos/train)] [output_dir] [EPIC_train_action_labels.csv]"
 	exit 1
 fi
 
