@@ -33,7 +33,7 @@ do
 
 	#ffmpeg -hwaccel cuvid -c:v h264_cuvid -ss $start_time -i "$input_dir/$participant/$video" -to $end_time -copyts -vf scale_npp=320:240 -c:v h264_nvenc -c:a copy "$output_dir/$verb/$(printf '%05d' $id).mp4" < /dev/null 2> /dev/null
 	# normal: 6.52s after 30 segments
-	# try nvidia: 0.74s after 40 segments
+	# try nvidia: 0.74s after 40 segments, seems to be inaccurate
 	# try fast and accurate seek: 0.786s after 40 segments
 
 	bash_end_time=$(date +%s.%N)
