@@ -17,6 +17,8 @@ mkdir -p "$output_dir"
 
 bash_start_time=$(date +%s.%N)
 
+index=1
+
 while read line
 do
 	id=$(echo "$line" | awk -F , '{print $1}')
@@ -26,7 +28,7 @@ do
 	end_time=$(echo "$line" | awk -F , '{print $6}')
 	verb=$(echo "$line" | awk -F , '{print $9}')
 
-	echo $((id + 1)) / $num_segments
+	echo $index / $num_segments
 	
 	mkdir -p "$output_dir/$verb"
 	ffmpeg -ss $start_time -i "$input_dir/$participant/$video" -to $end_time -copyts -vf scale=320:240:flags=bicubic -c:v libx264 -preset fast -crf 22 -c:a copy "$output_dir/$verb/$(printf '%05d' $id).mp4" < /dev/null 2> /dev/null
@@ -40,4 +42,6 @@ do
 	time_diff=$(echo "$bash_end_time - $bash_start_time" | bc)
 	average_time=$(echo "$time_diff / ($id+1)" | bc -l)
 	echo "average processing time per segment: $average_time"
+
+	(( index++ ))
 done <<< "$action_labels"
