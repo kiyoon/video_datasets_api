@@ -14,7 +14,9 @@ tar_files=$(find "$input_dir" -type f -name "*.tar" | sort)
 
 while read line
 do
-	extract_dir="$output_dir/${line%.tar}"
+	input_to_output=$(echo "$line" | sed "s|$input_dir|$output_dir|")
+	extract_dir="${input_to_output%.tar}"
 	mkdir -p "$extract_dir"
-	tar xvf "$line" -C "$extract_dir"
+	echo "Extracting to $extract_dir"
+	tar xf "$line" -C "$extract_dir"
 done <<< "$tar_files"
