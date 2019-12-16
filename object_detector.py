@@ -77,12 +77,6 @@ import pickle
 import cv2
 
 
-PATH_TO_TEST_IMAGES_DIR = '/home/kiyoon/datasets/epic/object_detection_images/train/P01/P01_01'
-#TEST_IMAGE_PATHS = [ os.path.join(PATH_TO_TEST_IMAGES_DIR, '%010d.jpg' % i) for i in range(2341, 3001, 30) ]
-TEST_IMAGE_PATHS = [ os.path.join(PATH_TO_TEST_IMAGES_DIR, '%010d.jpg' % i) for i in range(1, 99002, 30) ]
-
-
-
 
 
 def RGB_frame_from_video(video):
