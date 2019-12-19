@@ -12,18 +12,24 @@ def get_parser():
             formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("--input-dir", type=str, default=INPUT_DIR, help="A directory used for storing output results. Must contain directories of participant ids (e.g. P01, P02, P03)")
     parser.add_argument("--object-label-path", type=str, default=OBJECT_LABEL_PATH, help="Path to EPIC_train_object_labels.csv")
+    parser.add_argument("--visualise", action='store_true', help="visualise the boxes")
 
     return parser
 
 parser = get_parser()
 args = get_parser().parse_args()
 
+import time
 import tqdm
 import numpy as np
 import os
 import sys
 import pickle
 from epic_utils.epic_bounding_box_parser import EPIC_parse_object_bounding_box_labels
+import epic_utils.visualization_utils as vis_util
+import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use('tkagg')
 
 def np_vec_no_jit_iou(bboxes1, bboxes2):
     x11, y11, x12, y12 = np.split(bboxes1, 4, axis=1)
@@ -47,12 +53,16 @@ for train_video_id in tqdm.tqdm(TRAIN_VIDEO_IDS):
 
 
     ious = []
+
     for frame_num in bounding_box_labels.keys():
         ground_truth_boxes = np.array(bounding_box_labels[frame_num]['boxes'])
         if not len(ground_truth_boxes):
             continue
 
         detection_boxes = all_detection_outputs[frame_num]['detection_boxes']
+        # XYXY to YXYX
+        detection_boxes[:, [0,1]] = detection_boxes[:, [1,0]]
+        detection_boxes[:, [2,3]] = detection_boxes[:, [3,2]]
 
         if not len(detection_boxes):
             ious.extend([0.] * len(ground_truth_boxes))
@@ -68,6 +78,57 @@ for train_video_id in tqdm.tqdm(TRAIN_VIDEO_IDS):
             print(iou)
             print(iou.max(axis=1))
         '''
+
+        if args.visualise:
+            print(ground_truth_boxes)
+            print(detection_boxes)
+            amax = iou.argmax(axis=1)
+            print(iou.max(axis=1))
+            print(amax)
+            print(detection_boxes[amax])
+            #time.sleep(5)
+
+            detection_vis = np.ones((1080,1920,3), dtype=int) * 255
+            vis_util.visualize_boxes_and_labels_on_image_array(
+              detection_vis,
+              detection_boxes,
+              None,
+              None,
+              None,
+              min_score_thresh=0.1,
+              use_normalized_coordinates=False,
+              line_thickness=8)
+
+            plt.imshow(detection_vis)
+            plt.show()
+
+            ground_truth_vis = np.ones((1080,1920,3), dtype=int) * 255
+            vis_util.visualize_boxes_and_labels_on_image_array(
+              ground_truth_vis,
+              ground_truth_boxes,
+              None,
+              None,
+              None,
+              min_score_thresh=0.1,
+              use_normalized_coordinates=False,
+              line_thickness=8)
+
+            plt.imshow(ground_truth_vis)
+            plt.show()
+
+            selected_detection_vis = np.ones((1080,1920,3), dtype=int) * 255
+            vis_util.visualize_boxes_and_labels_on_image_array(
+              selected_detection_vis,
+              detection_boxes[amax],
+              None,
+              None,
+              None,
+              min_score_thresh=0.1,
+              use_normalized_coordinates=False,
+              line_thickness=8)
+
+            plt.imshow(selected_detection_vis)
+            plt.show()
         
         ious.extend(iou.max(axis=1))
 
