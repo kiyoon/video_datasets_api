@@ -31,7 +31,8 @@ do
 	echo $index / $num_segments
 	
 	mkdir -p "$output_dir/$verb"
-	ffmpeg -ss $start_time -i "$input_dir/$participant/$video" -to $end_time -copyts -vf scale=320:180:flags=bicubic -c:v libx264 -preset fast -crf 22 -c:a copy "$output_dir/$verb/$(printf '%05d' $id).mp4" < /dev/null 2> /dev/null
+	# -copyts
+	ffmpeg -ss $start_time -i "$input_dir/$participant/$video" -to $end_time -vf scale=256:256:flags=bicubic -c:v libx264 -preset fast -crf 22 -c:a copy "$output_dir/$verb/$(printf '%05d' $id).mp4" < /dev/null 2> /dev/null
 
 	#ffmpeg -hwaccel cuvid -c:v h264_cuvid -ss $start_time -i "$input_dir/$participant/$video" -to $end_time -copyts -vf scale_npp=320:240 -c:v h264_nvenc -c:a copy "$output_dir/$verb/$(printf '%05d' $id).mp4" < /dev/null 2> /dev/null
 	# normal: 6.52s after 30 segments
