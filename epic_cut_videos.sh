@@ -41,7 +41,7 @@ do
 
 	bash_end_time=$(date +%s.%N)
 	time_diff=$(echo "$bash_end_time - $bash_start_time" | bc)
-	average_time=$(echo "$time_diff / ($id+1)" | bc -l)
+	average_time=$(echo "$time_diff / ($index)" | bc -l)
 	echo "average processing time per segment: $average_time"
 
 	(( index++ ))
