@@ -31,7 +31,7 @@ do
 	echo $index / $num_segments
 	
 	mkdir -p "$output_dir/$verb"
-	# -copyts option makes it faster
+	# -copyts option ensures it cuts to the end_time, because we're using fast seek
 	# setdar sets display aspect ratio to 1:1.
 	ffmpeg -ss $start_time -i "$input_dir/$participant/$video" -to $end_time -copyts -vf scale=256:256:flags=bicubic,setdar=1/1 -c:v libx264 -preset fast -crf 22 -an "$output_dir/$verb/$(printf '%05d' $id).mp4" < /dev/null 2> /dev/null
 
