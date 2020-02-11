@@ -1,9 +1,7 @@
 import csv
 import numpy as np
 
-NB_TRAIN_SAMPLES = 86017
-NB_VAL_SAMPLES = 11522
-NB_TEST_SAMPLES = 10960
+from .definitions import *
 
 def labels_str2int(label_csv_path):
     labels = {}
