@@ -16,9 +16,9 @@
 
 import logging
 
-import tensorflow as tf
-from google.protobuf import text_format
-from object_detection.protos import string_int_label_map_pb2
+#import tensorflow as tf
+#from google.protobuf import text_format
+#from object_detection.protos import string_int_label_map_pb2
 
 
 def _validate_label_map(label_map):
@@ -121,6 +121,7 @@ def convert_label_map_to_categories(label_map,
   return categories
 
 
+'''
 def load_labelmap(path):
   """Loads label map proto.
 
@@ -187,7 +188,7 @@ def get_label_map_dict(label_map_path,
           label_map_dict['class_' + str(value)] = value
 
   return label_map_dict
-
+'''
 
 def create_categories_from_labelmap(label_map_path, use_display_name=True):
   """Reads a label map and returns categories list compatible with eval.
