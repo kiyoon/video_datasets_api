@@ -30,10 +30,12 @@ do
 
 	echo $index / $num_segments
 	
-	mkdir -p "$output_dir/$verb"
+	#mkdir -p "$output_dir/$verb"
 	# -copyts option ensures it cuts to the end_time, because we're using fast seek
 	# setdar sets display aspect ratio to 1:1.
-	ffmpeg -ss $start_time -i "$input_dir/$participant/$video" -to $end_time -copyts -vf scale=256:256:flags=bicubic,setdar=1/1 -c:v libx264 -preset fast -crf 22 -an "$output_dir/$verb/$(printf '%05d' $id).mp4" < /dev/null 2> /dev/null
+	# -r sets the output fps (30000/1001 means 29.97)
+	#ffmpeg -ss $start_time -i "$input_dir/$participant/$video" -to $end_time -copyts -vf scale=256:256:flags=bicubic,setdar=1/1 -c:v libx264 -preset fast -crf 22 -an "$output_dir/$verb/$(printf '%05d' $id).mp4" < /dev/null 2> /dev/null
+	ffmpeg -ss $start_time -i "$input_dir/$participant/$video" -to $end_time -copyts -vf scale=-2:324 -sws_flags bicubic -c:v libx264 -preset fast -crf 22 -color_range pc -colorspace bt709 -color_trc bt709 -color_primaries bt709 -pix_fmt yuvj420p -an -r 15000/1001 "$output_dir/$(printf '%05d' $id).mp4" < /dev/null 2> /dev/null 2> /dev/null
 
 	#ffmpeg -hwaccel cuvid -c:v h264_cuvid -ss $start_time -i "$input_dir/$participant/$video" -to $end_time -copyts -vf scale_npp=320:240 -c:v h264_nvenc -c:a copy "$output_dir/$verb/$(printf '%05d' $id).mp4" < /dev/null 2> /dev/null
 	# normal: 6.52s after 30 segments

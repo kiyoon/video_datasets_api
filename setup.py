@@ -12,5 +12,5 @@ setup(
     packages=['video_datasets_api'],
     #package_dir={'video_datasets_api': 'src'},
     python_requires='>=3.5',
-    install_requires=['numpy>=1.6.0'],
+    install_requires=['numpy>=1.16.0'],
 )
