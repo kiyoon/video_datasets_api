@@ -12,6 +12,24 @@ def labels_str2int(label_csv_path):
 
     return labels
 
+
+
+def labels_str2int_sorted(label_csv_path):
+    with open(label_csv_path) as f:
+        lines = f.readlines()
+    categories = []
+    for line in lines:
+        line = line.rstrip()
+        categories.append(line)
+    categories = sorted(categories)
+
+    dict_categories = {}
+    for i, category in enumerate(categories):
+        dict_categories[category.replace(',', '')] = i
+
+    return dict_categories
+
+
 def read_splits(split_csv_path, labels_str2int):
     """
         Returns:
