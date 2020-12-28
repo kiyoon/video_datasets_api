@@ -55,7 +55,7 @@ def read_splits(split_csv_path, labels_str2int):
 def get_class_keys(label_csv_path):
     """
     Returns:
-        labels (list of string)
+        class keys (list of string)
     """
     labels = []
     with open(label_csv_path) as csvfile:
@@ -64,6 +64,19 @@ def get_class_keys(label_csv_path):
             labels.append(''.join(row))
 
     return labels
+
+def get_class_keys_shrinked(label_csv_path):
+    """
+    Returns:
+        class keys, but "something" is replaced by "[]"
+    """
+    class_keys = get_class_keys(label_csv_path)
+    for i, class_key in enumerate(class_keys):
+        temp_class_key = class_key.replace("something", "[]")
+        class_keys[i] = temp_class_key.replace("Something", "[]")
+        
+    return class_keys
+
 
 if __name__ == "__main__":
     labels = labels_str2int('/home/kiyoon/datasets/something-something-v1/annotations/something-something-v1-labels.csv')
