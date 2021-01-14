@@ -65,6 +65,7 @@ small
 >>> scene['objects'][0]['shape']
 spl
 # spl, sphere, cube, cone, cylinder
+# object '0' is always snitch (spl) which is the object of interest
 
 >>> scene['objects'][0]['color']
 gold
