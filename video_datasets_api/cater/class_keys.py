@@ -1,21 +1,4 @@
-# Run with caffe2_Nov_2018 conda env
-
-#import glob
-#import os.path as osp
-#import json
-#from gen_utils import mkdir_p
-#import numpy as np
-#from tqdm import tqdm
-#import logging
-#import subprocess
-#from functools import partial
-#import re
-#import cPickle as pkl
-#from collections import defaultdict, OrderedDict
 from itertools import permutations, product
-#import multiprocessing as mp
-#import math
-#import copy
 
 ACTION_CLASSES = [
     # object, movement
@@ -43,6 +26,8 @@ ORDERING = [
     _AFTER,
 ]
 
+ACTIONS = ['_slide', '_pick_place', '_rotate', '_contain']
+OBJECTS = ['sphere', 'spl', 'cylinder', 'cube', 'cone']
 
 
 
