@@ -110,7 +110,7 @@ In fact, the new time slot starts whenever the last time slot ends.
 ```python
 cur_frame = end_frame + 1
 ```
-(actions.py#L58)https://github.com/rohitgirdhar/CATER/blob/13a19643f1a2fb24e931df25abd74353e4f2fdcb/generate/actions.py#L58  
+[actions.py#L58](https://github.com/rohitgirdhar/CATER/blob/13a19643f1a2fb24e931df25abd74353e4f2fdcb/generate/actions.py#L58)  
 The time slot ends at the frame that every motion ends.  
 (`add_movements_singleObj()` returns `last_frame_added` which is `max(new_end_frame, last_frame_added)` and  
 `add_movements_multiObj_try()` returns `max(new_end_frame, new_end_frame_singleObjMotion)`)
