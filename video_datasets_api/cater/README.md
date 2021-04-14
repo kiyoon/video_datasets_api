@@ -91,3 +91,20 @@ gold
 
 # Why 0 to 300?? 301 frames total?
 ```
+
+# Task2:
+## Ordering
+According to `get_ordering` from [this code](https://github.com/rohitgirdhar/CATER/blob/13a19643f1a2fb24e931df25abd74353e4f2fdcb/generate/gen_train_test.py#L100), when the start and end time is the same with two primitive actions (edge cases), they're defined as `before` and `after` rather than `during`.
+```python
+def get_ordering(act1_time, act2_time):
+    if act1_time[1] <= act2_time[0]:
+        # act1 should finish before act2 starts
+        return _BEFORE
+    elif act2_time[1] <= act1_time[0]:
+        # act1 should start after act2 ends
+        return _AFTER
+    else:
+        # We define everything else as "during", though it might be partly
+        # overlapped etc
+        return _DURING
+```
