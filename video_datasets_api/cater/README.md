@@ -170,3 +170,6 @@ def get_ordering(act1_time, act2_time):
         # overlapped etc
         return _DURING
 ```
+
+## Slide of the contained object - is it annotated in scenes?
+Yes, however, they have no additional flag indicating whether it is contained. It has to be inferred by back-tracking containment.
