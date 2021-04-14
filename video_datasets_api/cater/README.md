@@ -98,15 +98,53 @@ Looking at `add_movements_singleObj()` and `add_movements_multiObj_try()`,
 `end_frame` can be `total_frames=300`, which means there are actually `total_frames+1=301` frames.
 
 The paper says: "we render 300-frame 320x240px videos", but it is obviously wrong.
-90, 
+
 ## How start/end frames of movements are defined.
 According to the paper, "We split the video into 30-frame slots, and each action is contained within these slots".  
 and "For each action, we pick a random start and end time from within the 30-frame slot."  
 
-This is confusing because it sounds like there are 10 time slots throughout a video, and the actions should be defined within 0~29, 30~59, 60~89, ... frames.  
+This is confusing because it sounds like there are 10 time slots throughout a video, and the actions should be defined within 0-29, 30-59, 60-89, ... frames.  
 However, you see that the start and end time of the movements don't follow the rule.
 
+In fact, the new time slot starts whenever the last time slot ends.
+```python
+cur_frame = end_frame + 1
+```
+(actions.py#L58)https://github.com/rohitgirdhar/CATER/blob/13a19643f1a2fb24e931df25abd74353e4f2fdcb/generate/actions.py#L58  
+The time slot ends at the frame that every motion ends.  
+(`add_movements_singleObj()` returns `last_frame_added` which is `max(new_end_frame, last_frame_added)` and  
+`add_movements_multiObj_try()` returns `max(new_end_frame, new_end_frame_singleObjMotion)`)
 
+In each time slot, start the motion at timeslot_start+random.randint(0,10).  
+That means 0 to 9 frames of delay in the movement.  
+
+The duration of the movement is `random.randint(MOVEMENT_MIN, MOVEMENT_MAX)`, that is, 20-29 frames, since  
+```python
+MOVEMENT_MIN = 20
+MOVEMENT_MAX = 30
+```
+[actions.py#L87](https://github.com/rohitgirdhar/CATER/blob/13a19643f1a2fb24e931df25abd74353e4f2fdcb/generate/actions.py#L87)  
+
+Therefore, the duration of the time slot is from 20 to 38. (`0 + 20 = 20` to `9 + 29 = 38`)  
+
+There is no time slot starting from frame > 270, because of 
+```python
+while cur_frame <= total_frames - MOVEMENT_MAX:
+```
+[actions.py#L52-L58](https://github.com/rohitgirdhar/CATER/blob/13a19643f1a2fb24e931df25abd74353e4f2fdcb/generate/actions.py#L52-L58)
+
+
+Unfortunately, the scenes file does not have any time slot information. 
+
+## In each time slot, how are the motion selected?
+
+They choose `add_movements_singleObj()` or `add_movements_multiObj_try()` randomly (50/50 chance).  
+The former is for non-containment, and the latter is for containment.  
+The latter can also fail after 100 tries and you have another 50/50 chance of calling either of the two functions.  
+Apparently, the latter fails quite frequently, because containment does not happen as frequent as other actions.
+
+If `add_movements_multiObj_try(max_motions=K)` is succeeded, call `add_movements_singleObj(max_motions=K-1)`.  
+This means that there will be no two containments happening in the same time slot.
 
 ## What about the Cameramotion?
 
@@ -114,7 +152,7 @@ However, you see that the start and end time of the movements don't follow the r
 That is, the camera positions are defined in `[30, 60, 90, 120, 150, 180, 210, 240, 270, 300]` and it starts from the same position at frame 0.  
 [render_videos.py#L565-L574](https://github.com/rohitgirdhar/CATER/blob/13a19643f1a2fb24e931df25abd74353e4f2fdcb/generate/render_videos.py#L565-L574)
 
-Unfortunately, the scenes does not have any camera position information.
+Unfortunately, the scenes does not have any camera position information. You can indirectly infer from the movements start and end frame.
 
 ## Task2 - Ordering
 According to `get_ordering` from [gen_train_test.py#L100](https://github.com/rohitgirdhar/CATER/blob/13a19643f1a2fb24e931df25abd74353e4f2fdcb/generate/gen_train_test.py#L100), when the start and end time is the same with two primitive actions (edge cases), they're defined as `before` and `after` rather than `during`.
