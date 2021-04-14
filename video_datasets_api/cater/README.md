@@ -88,13 +88,36 @@ gold
 
 >>> scene['objects'][0]['locations']['300']
 [-0.8938594460487366, -1.9115666151046753, 0.3421497941017151]
-
-# Why 0 to 300?? 301 frames total?
 ```
 
-# Task2:
-## Ordering
-According to `get_ordering` from [this code](https://github.com/rohitgirdhar/CATER/blob/13a19643f1a2fb24e931df25abd74353e4f2fdcb/generate/gen_train_test.py#L100), when the start and end time is the same with two primitive actions (edge cases), they're defined as `before` and `after` rather than `during`.
+# Q&A
+## Why 0 to 300?? 301 frames total?
+It is because of the `num_frames + 1` in `random_objects_movements()` in `actions.py`.  
+[actions.py#L40](https://github.com/rohitgirdhar/CATER/blob/13a19643f1a2fb24e931df25abd74353e4f2fdcb/generate/actions.py#L40)  
+Looking at `add_movements_singleObj()` and `add_movements_multiObj_try()`,  
+`end_frame` can be `total_frames=300`, which means there are actually `total_frames+1=301` frames.
+
+The paper says: "we render 300-frame 320x240px videos", but it is obviously wrong.
+90, 
+## How start/end frames of movements are defined.
+According to the paper, "We split the video into 30-frame slots, and each action is contained within these slots".  
+and "For each action, we pick a random start and end time from within the 30-frame slot."  
+
+This is confusing because it sounds like there are 10 time slots throughout a video, and the actions should be defined within 0~29, 30~59, 60~89, ... frames.  
+However, you see that the start and end time of the movements don't follow the rule.
+
+
+
+## What about the Cameramotion?
+
+`add_random_camera_motion()` in `render_videos.py`, it's always 30-frame interval with 10 random points.  
+That is, the camera positions are defined in `[30, 60, 90, 120, 150, 180, 210, 240, 270, 300]` and it starts from the same position at frame 0.  
+[render_videos.py#L565-L574](https://github.com/rohitgirdhar/CATER/blob/13a19643f1a2fb24e931df25abd74353e4f2fdcb/generate/render_videos.py#L565-L574)
+
+Unfortunately, the scenes does not have any camera position information.
+
+## Task2 - Ordering
+According to `get_ordering` from [gen_train_test.py#L100](https://github.com/rohitgirdhar/CATER/blob/13a19643f1a2fb24e931df25abd74353e4f2fdcb/generate/gen_train_test.py#L100), when the start and end time is the same with two primitive actions (edge cases), they're defined as `before` and `after` rather than `during`.
 ```python
 def get_ordering(act1_time, act2_time):
     if act1_time[1] <= act2_time[0]:
