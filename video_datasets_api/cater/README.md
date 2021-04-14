@@ -106,7 +106,8 @@ and "For each action, we pick a random start and end time from within the 30-fra
 This is confusing because it sounds like there are 10 time slots throughout a video, and the actions should be defined within 0-29, 30-59, 60-89, ... frames.  
 However, you see that the start and end time of the movements don't follow the rule.
 
-In fact, the new time slot starts whenever the last time slot ends.
+In fact, the duration of the time slots is 20-38 frames chosen randomly, (explanation below)  
+and the new time slot starts one frame after the last time slot ends.
 ```python
 cur_frame = end_frame + 1
 ```
