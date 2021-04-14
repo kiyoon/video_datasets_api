@@ -9,8 +9,13 @@ dict_keys(['movements', 'directions', 'image_filename', 'split', 'objects', 'rel
 
 >>> scene['movements']
 {'Cone_0': [['_slide', None, 5, 31], ['_pick_place', None, 48, 77], ['_pick_place', None, 81, 106], ['_pick_place', None, 120, 148], ['_contain', 'Spl_0', 164, 186], ['_pick_place', None, 197, 225], ['_slide', None, 243, 263]], 'SmoothCylinder-Short_0': [['_rotate', None, 8, 38], ['_rotate', None, 47, 77], ['_rotate', None, 82, 107], ['_rotate', None, 124, 153], ['_pick_place', None, 158, 179], ['_rotate', None, 202, 224], [[-0.8938594460487366, -1.9115666151046753, 0.3421497941017151]'_rotate', None, 239, 266]], 'SmoothCube_v2_1': [['_rotate', None, 7, 32], ['_rotate', None, 42, 65], ['_rotate', None, 78, 108], ['_rotate', None, 121, 141], ['_rotate', None, 166, 186], ['_rotate', None, 207, 231], ['_rotate', None, 242, 270]], 'SmoothCylinder-Short_2': [['_rotate', None, 0, 25], ['_rotate', None, 39, 62], ['_pick_place', None, 86, 114], ['_pick_place', None, 126, 155], ['_slide', None, 158, 185], ['_rotate', None, 202, 223], ['_rotate', None, 245, 269]], 'Cone_1': [['_slide', None, 10, 35], ['_slide', None, 43, 66], ['_slide', None, 83, 104], ['_slide', None, 125, 149], ['_pick_place', None, 157, 187], ['_pick_place', None, 206, 231], ['_slide', None, 241, 268]], 'Spl_0': [['_rotate', None, 6, 34], ['_slide', None, 40, 65], ['_rotate', None, 78, 99], ['_rotate', None, 129, 156], ['_no_op', None, 197, 225], ['_rotate', None, 247, 269]], 'SmoothCylinder-Short_1': [['_rotate', None, 3, 23], ['_rotate', None, 40, 60], ['_rotate', None, 85, 115], ['_rotate', None, 120, 147], ['_rotate', None, 166, 196], ['_rotate', None, 202, 231], ['_pick_place', None, 239, 266]], 'SmoothCube_v2_0': [['_rotate', None, 3, 30], ['_rotate', None, 45, 69], ['_pick_place', None, 88, 118], ['_rotate', None, 120, 145], ['_rotate', None, 157, 184], ['_pick_place', None, 206, 235], ['_rotate', None, 248, 268]], 'SmoothCube_v2_2': [['_pick_place', None, 6, 26], ['_rotate', None, 45, 74], ['_rotate', None, 79, 107], ['_rotate', None, 122, 143], ['_rotate', None, 165, 189], ['_pick_place', None, 204, 227], ['_rotate', None, 243, 267]], 'Sphere_0': [['_slide', None, 8, 28], ['_slide', None, 43, 68], ['_slide', None, 79, 107], ['_pick_place', None, 128, 149], ['_slide', None, 160, 188], ['_pick_place', None, 207, 237], ['_slide', None, 243, 273]]}
-# The frame numbers: 0~300
-# movement: _slide, _rotate, _pick_place, _contain, _no_op
+# [0] movement: _slide, _rotate, _pick_place, _contain, _no_op
+# _no_op is called when the objects are splitting from being contained.
+# The top object is _pick_place and the bottom rests (can be 1 or more) are _no_op
+# refer to https://github.com/rohitgirdhar/CATER/blob/master/generate/actions.py
+# [1]: if _contain, the object being contained.
+# [2]: Start frame: 0~300
+# [3]: End frame: 0~300
 
 >>> scene['directions']
 {'right': [0.6571769714355469, 0.7537363767623901, -0.0], 'behind': [-0.7537363171577454, 0.6571769714355469, 0.0], 'below': [-0.0, -0.0, -1.0], 'left': [-0.6571769714355469, -0.7537363767623901, 0.0], 'front': [0.7537363171577454, -0.6571769714355469, -0.0], 'above': [0.0, 0.0, 1.0]}
