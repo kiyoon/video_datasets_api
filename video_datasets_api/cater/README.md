@@ -173,3 +173,25 @@ def get_ordering(act1_time, act2_time):
 
 ## Slide of the contained object - is it annotated in scenes?
 Yes, however, they have no additional flag indicating whether it is contained. It has to be inferred by back-tracking containment.
+
+## Why is generating task2 dataset in original CATER repo so slow?
+[`actions_order_dataset()` in `gen_train_test.py`](https://github.com/rohitgirdhar/CATER/blob/13a19643f1a2fb24e931df25abd74353e4f2fdcb/generate/gen_train_test.py#L169) generates the task2 dataset, and  
+[`compute_active_labels()` in `gen_train_test.py`](https://github.com/rohitgirdhar/CATER/blob/13a19643f1a2fb24e931df25abd74353e4f2fdcb/generate/gen_train_test.py#L131) generates the label for each video.  
+However, the code is really poorly implemented, so you'd better use my code `generate_task2_labels_from_scenes()` in `generate_labels_from_scenes.py`.
+
+On my laptop, it takes **304.0 seconds** to generate the whole dataset labels with the CATER code, and **1.2 seconds** with mine. Nearly 300 times faster.  
+I made sure that my function generates exactly the same labels as the original one.
+
+## There are broken videos in the dataset?
+Yes, there are some broken videos in the dataset.  
+[`check_avi_broken()` in `gen_train_test.py`](https://github.com/rohitgirdhar/CATER/blob/13a19643f1a2fb24e931df25abd74353e4f2fdcb/generate/gen_train_test.py#L209) checks broken video files, but **it doesn't check if the video is generated fully.**
+
+You have to extract the videos into frames, and check if they have frame 0 to frame 300, totalling 301 image files.  
+Or, you can use the provided video ids from this repository.
+
+```python
+from video_datasets_api.cater.trainval_splits.max2action.actions_present.train import video_ids    # task1 train video ids
+from video_datasets_api.cater.trainval_splits.max2action.actions_present.val import video_ids    # task1 val video ids
+from video_datasets_api.cater.trainval_splits.max2action.actions_order_uniq.train import video_ids    # task2 train video ids
+from video_datasets_api.cater.trainval_splits.max2action.actions_order_uniq.val import video_ids    # task2 val video ids
+```
