@@ -114,6 +114,7 @@ class OneAction():
 
 
 def generate_task2_labels_from_all_actions(all_actions, class_keys_to_labels_dict):
+    n = 2
 
     def actions_pair_to_class_keys_only_before(actions_pair):
         order = get_ordering(actions_pair[0].time(), actions_pair[1].time())
@@ -147,7 +148,6 @@ def generate_task2_labels_from_scenes(movements, objects, class_keys_to_labels_d
     It also returns the actual primitive action pairs that are in charge of the final labels.
     """
 
-    n = 2
     all_actions = AllActions(movements, objects)
     return generate_task2_labels_from_all_actions(all_actions)
 
@@ -214,17 +214,16 @@ def main_all_scenes(CATER_dir):
         with open(scene_path, 'r', encoding='utf8') as scene_file:
             scenes[basename] = json.load(scene_file, object_hook=OrderedDict)
 
-    if False:
-        # slow way
-        print("Evaluating the slow function..")
-        start_time = time.time()
-        for basename, labels_lists in tqdm.tqdm(labels_from_lists.items()):
-            scene = scenes[basename]
-            labels_scenes = compute_active_labels(scene['movements'], scene['objects'], classes)
-            assert set(labels_lists) == labels_scenes, f"Labels generated does not match with labels provided in `lists`. {labels_lists} and {sorted(list(labels_scenes))}"
+    # slow way
+    print("Evaluating the slow function..")
+    start_time = time.time()
+    for basename, labels_lists in tqdm.tqdm(labels_from_lists.items()):
+        scene = scenes[basename]
+        labels_scenes = compute_active_labels(scene['movements'], scene['objects'], classes)
+        assert set(labels_lists) == labels_scenes, f"Labels generated does not match with labels provided in `lists`. {labels_lists} and {sorted(list(labels_scenes))}"
 
-        elapsed_time = time.time() - start_time
-        print(f'Elapsed time of the slow function from CATER: {elapsed_time}')
+    elapsed_time = time.time() - start_time
+    print(f'Elapsed time of the slow function from CATER: {elapsed_time}')
 
     # fast way
     print("Evaluating the fast function..")
