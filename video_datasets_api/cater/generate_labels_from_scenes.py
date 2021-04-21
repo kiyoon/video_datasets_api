@@ -2,20 +2,9 @@ import json
 from .class_keys import ACTION_CLASSES, ORDERING, _BEFORE, _AFTER, _DURING, class_keys_task2, class_keys_to_labels
 from .definitions import NUM_CLASSES_TASK2
 
-import glob
 import os
-import numpy as np
-#from tqdm import tqdm
-import logging
-import subprocess
-from functools import partial
-import re
-import pickle
-from collections import defaultdict, OrderedDict
+from collections import OrderedDict
 from itertools import permutations, product, combinations
-import multiprocessing as mp
-import math
-import copy
 
 
 def get_ordering(act1_time, act2_time):
@@ -30,8 +19,9 @@ def get_ordering(act1_time, act2_time):
         # overlapped etc
         return _DURING
 
-
-def satisfy_action_class(action_class, actions_set):
+# From rohitgirdhar/CATER. For evaluation purposes, but extremely slow.
+# DO NOT USE.
+def satisfy_action_class(action_class, actions_set):#{{{
     action_class_ents, action_class_ord = action_class
     assert len(action_class_ents) == len(actions_set), \
         'Must be same number of actions'
@@ -65,31 +55,76 @@ def compute_active_labels(movements, objects, classes, n=2):
             enumerate(classes), permutations(all_actions, n)):
         if satisfy_action_class(action_class, actions_set):
             this_lbl.add(cls_id)
-    return this_lbl
+    return this_lbl#}}}
+# END DO NOT USE.
 
-# faster version of `compute_active_labels()` but only works with task2 (len(classes) == 301 and n==2)
-def generate_task2_labels_from_scenes(movements, objects, class_keys_to_labels_dict):
-    n = 2
-    name_to_type = {el['instance']: el['shape'] for el in objects}
-    all_actions = []        # _no_op filtered out
-    for name, motions in movements.items():
-        for motion in motions:
-            if motion[0] != '_no_op':
-                all_actions.append((
-                    name,
-                    name_to_type[name],
-                    motion))
+class AllActions():
+    def __init__(self, movements, objects):
+        name_to_type = {el['instance']: el['shape'] for el in objects}
+        self.all_actions = []        # _no_op filtered out
+        for name, motions in movements.items():
+            for motion in motions:
+                if motion[0] != '_no_op':
+                    self.all_actions.append(OneAction(
+                        name,
+                        name_to_type[name],
+                        motion))
+
+    def __iter__(self):
+        return self.all_actions.__iter__()
+    def __next__(self):
+        return self.all_actions.__next__()
+    def __len__(self):
+        return self.all_actions.__len__()
+    def __repr__(self):
+        return self.all_actions.__repr__()
+    def __str__(self):
+        return self.all_actions.__str__()
+    def __getitem__(self, index):
+        return self.all_actions.__getitem__(index)
+    def __setitem__(self, index, value):
+        return self.all_actions.__setitem__(index, value)
+
+    def sort(self):
+        self.all_actions = sorted(self.all_actions, key=lambda x: x.start_time())
+
+class OneAction():
+    def __init__(self, name, obj_type, motion):
+        self.action = (name, obj_type, motion)
+
+    def start_time(self):
+        return self.action[2][2]
+    def end_time(self):
+        return self.action[2][3]
+    def time(self):
+        return self.action[2][2:]
+    def movement(self):
+        return self.action[2][0]
+    def instance(self):
+        return self.action[0]
+    def obj_type(self):
+        return self.action[1]
+    def containee(self):
+        return self.action[2][1]
+
+    def __repr__(self):
+        return self.action.__repr__()
+    def __str__(self):
+        return self.action.__str__()
+
+
+def generate_task2_labels_from_all_actions(all_actions, class_keys_to_labels_dict):
 
     def actions_pair_to_class_keys_only_before(actions_pair):
-        order = get_ordering(actions_pair[0][2][2:], actions_pair[1][2][2:])
+        order = get_ordering(actions_pair[0].time(), actions_pair[1].time())
         if order == _AFTER:
-            class_key = f"{actions_pair[1][1]}{actions_pair[1][2][0]} before {actions_pair[0][1]}{actions_pair[0][2][0]}"
+            class_key = f"{actions_pair[1].obj_type()}{actions_pair[1].movement()} before {actions_pair[0].obj_type()}{actions_pair[0].movement()}"
             return (actions_pair[1], actions_pair[0]), class_key
         elif order == _BEFORE:
-            class_key = f"{actions_pair[0][1]}{actions_pair[0][2][0]} before {actions_pair[1][1]}{actions_pair[1][2][0]}"
+            class_key = f"{actions_pair[0].obj_type()}{actions_pair[0].movement()} before {actions_pair[1].obj_type()}{actions_pair[1].movement()}"
             return actions_pair, class_key
         elif order == _DURING:
-            class_key = f"{actions_pair[0][1]}{actions_pair[0][2][0]} during {actions_pair[1][1]}{actions_pair[1][2][0]}"
+            class_key = f"{actions_pair[0].obj_type()}{actions_pair[0].movement()} during {actions_pair[1].obj_type()}{actions_pair[1].movement()}"
             return actions_pair, class_key
         else:
             raise NotImplementedError()
@@ -106,21 +141,17 @@ def generate_task2_labels_from_scenes(movements, objects, class_keys_to_labels_d
 
     return labels, actions_in_charge
 
-def action_order_unique(classes):
-    def reverse(el):
-        if el == ('during',):
-            return el
-        elif el == ('before',):
-            return ('after',)
-        elif el == ('after',):
-            return ('before',)
-        else:
-            raise ValueError('This should not happen')
-    classes_uniq = []
-    for el in classes:
-        if el not in classes_uniq and ((el[0][1], el[0][0]), reverse(el[1])) not in classes_uniq:
-            classes_uniq.append(el)
-    return classes_uniq
+
+def generate_task2_labels_from_scenes(movements, objects, class_keys_to_labels_dict):
+    """Faster version of `compute_active_labels()` but only works with task2 (len(classes) == 301 and n==2)
+    It also returns the actual primitive action pairs that are in charge of the final labels.
+    """
+
+    n = 2
+    all_actions = AllActions(movements, objects)
+    return generate_task2_labels_from_all_actions(all_actions)
+
+
 
 def main_single_scene(CATER_dir):
     import time
@@ -183,16 +214,17 @@ def main_all_scenes(CATER_dir):
         with open(scene_path, 'r', encoding='utf8') as scene_file:
             scenes[basename] = json.load(scene_file, object_hook=OrderedDict)
 
-    # slow way
-    print("Evaluating the slow function..")
-    start_time = time.time()
-    for basename, labels_lists in tqdm.tqdm(labels_from_lists.items()):
-        scene = scenes[basename]
-        labels_scenes = compute_active_labels(scene['movements'], scene['objects'], classes)
-        assert set(labels_lists) == labels_scenes, f"Labels generated does not match with labels provided in `lists`. {labels_lists} and {sorted(list(labels_scenes))}"
+    if False:
+        # slow way
+        print("Evaluating the slow function..")
+        start_time = time.time()
+        for basename, labels_lists in tqdm.tqdm(labels_from_lists.items()):
+            scene = scenes[basename]
+            labels_scenes = compute_active_labels(scene['movements'], scene['objects'], classes)
+            assert set(labels_lists) == labels_scenes, f"Labels generated does not match with labels provided in `lists`. {labels_lists} and {sorted(list(labels_scenes))}"
 
-    elapsed_time = time.time() - start_time
-    print(f'Elapsed time of the slow function from CATER: {elapsed_time}')
+        elapsed_time = time.time() - start_time
+        print(f'Elapsed time of the slow function from CATER: {elapsed_time}')
 
     # fast way
     print("Evaluating the fast function..")
