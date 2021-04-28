@@ -149,7 +149,7 @@ def generate_task2_labels_from_scenes(movements, objects, class_keys_to_labels_d
     """
 
     all_actions = AllActions(movements, objects)
-    return generate_task2_labels_from_all_actions(all_actions)
+    return generate_task2_labels_from_all_actions(all_actions, class_keys_to_labels_dict)
 
 
 
