@@ -135,7 +135,7 @@ while cur_frame <= total_frames - MOVEMENT_MAX:
 [actions.py#L52-L58](https://github.com/rohitgirdhar/CATER/blob/13a19643f1a2fb24e931df25abd74353e4f2fdcb/generate/actions.py#L52-L58)
 
 
-Unfortunately, the scenes file does not have any time slot information. 
+The scenes file does not have any time slot information. Use `get_time_slots()` in `generate_labels_from_scenes.py` in this repo, to get the time slot information.
 
 ## In each time slot, how are the motion selected?
 
