@@ -111,5 +111,5 @@ if __name__ == '__main__':
         traceback.print_exc()
     else:
         print("Download completed!")
-        print("Extract using: `cat 20bn-something-something-v1-?? | tar zx`")
+        print(f"Extract using: `cat 20bn-something-something-v{args.version}-?? | tar zx`")
 
