@@ -3,7 +3,8 @@
 import argparse
 def get_parser():
     parser = argparse.ArgumentParser(description='''Download something-something by parsing the download page html file.
-You'll need to download the html page manually because it requires you to log in.''',
+You'll need to download the html page manually because it requires you to log in.
+The download links will expire in 1 hour. Simply update the HTML file and run again, then it will resume the downloads.''',
             formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("TwentyBN_html", help="Path to html file to parse download links.")
     parser.add_argument("output_dir", help="Path to output directory.")
@@ -20,6 +21,7 @@ from bs4 import BeautifulSoup
 import hashlib
 
 import time
+import traceback
 
 TIME_DURATION_UNITS = (
     ('week', 60*60*24*7),
@@ -85,19 +87,27 @@ if __name__ == '__main__':
     search_res = soup.select('#page-top > section.py-5 > div > div > div > div > div > div > div.col-md-8 > a')
 
     os.makedirs(args.output_dir, exist_ok=True)
-    for link in search_res:
-        url = link['href']
-        text = link.text.strip()
-        if f'20bn-something-something-v{args.version}' in url:
-            if text == 'md5':
-                response = requests.get(url, stream=True)
-                md5hash, filename = response.content.decode().strip().split()
-                calced_hash = calc_file_md5hash(os.path.join(args.output_dir, filename))
-                if calced_hash == md5hash:
-                    print(f'{filename} checksum OK')
+    try:
+        for link in search_res:
+            url = link['href']
+            text = link.text.strip()
+            if f'20bn-something-something-v{args.version}' in url:
+                if text == 'md5':
+                    response = requests.get(url, stream=True)
+                    md5hash, filename = response.content.decode().strip().split()
+                    calced_hash = calc_file_md5hash(os.path.join(args.output_dir, filename))
+                    if calced_hash == md5hash:
+                        print(f'{filename} checksum OK')
+                    else:
+                        print(f'{filename} checksum Failed!')
                 else:
-                    print(f'{filename} checksum Failed!')
-            else:
-                print(text)
-                download_with_progress(url, os.path.join(args.output_dir, text))
+                    if not os.path.isfile(os.path.join(args.output_dir, text)):
+                        print(text)
+                        download_with_progress(url, os.path.join(args.output_dir, text))
+                    else:
+                        print(f'Skipping {text}')
+    except Exception as e:
+        print("Error occurred. Perhaps the download links have expired. Update the html file and re-run the code, then it will resume.")
+        traceback.print_exc()
+        
 
