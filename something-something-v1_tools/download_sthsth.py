@@ -110,4 +110,6 @@ if __name__ == '__main__':
         print("Error occurred. Perhaps the download links have expired. Update the html file and re-run the code, then it will resume.")
         traceback.print_exc()
         
+    print("Download completed!")
+    print("Extract using: `cat 20bn-something-something-v1-?? | tar zx`")
 
