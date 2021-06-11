@@ -74,6 +74,8 @@ def download_with_progress(link, file_name):
                 eta = (elapsed_time * (total_length / dl)) - elapsed_time if dl > 0 else 0
                 sys.stdout.write("\r[%s%s] %s / %s ETA: %s          " % ('=' * done, ' ' * (50-done), sizeof_fmt(dl), sizeof_fmt(total_length), human_time_duration(eta)) )
                 sys.stdout.flush()
+            sys.stdout.write("\r[%s%s] %s / %s Elapsed time: %s          " % ('=' * done, ' ' * (50-done), sizeof_fmt(dl), sizeof_fmt(total_length), human_time_duration(elapsed_time)) )
+            sys.stdout.flush()
 
 
 if __name__ == '__main__':
