@@ -7,13 +7,21 @@ timestamp() {
 
 if [ $# -lt 3 ]
 then
-	echo "usage: $0 [input_dir (should be .../videos/train)] [output_dir] [EPIC_train_action_labels.csv]"
+	echo "usage: $0 [input_dir (should be .../videos/train)] [output_dir] [EPIC_train_action_labels.csv] [quality=5 (2(best)-31(worst))]"
+	echo "Note: it will convert the videos into 15fps. If you don't want it, change the ffmpeg option (remove -r 15000/1001)"
 	exit 1
 fi
 
 input_dir="$1"
 output_dir="$2"
 action_labels_csv="$3"
+
+if [ $# -eq 3 ]
+then
+	quality=5
+else
+	quality="$4"
+fi
 
 action_labels=$(cat "$action_labels_csv" | sed 1d)
 num_segments=$(echo "$action_labels" | wc -l)
@@ -39,10 +47,10 @@ do
 	
 	mkdir -p "$output_dir/$(printf '%05d' $id)"
 	# -copyts option ensures it cuts to the end_time, because we're using fast seek
-	# DON'T use -copyts, as it may produce bug for (pyav) decoding.
+	# but DON'T use -copyts, as it may produce bug for (pyav) decoding.
 	# setdar sets display aspect ratio to 1:1.
 	# -r sets the output fps (30000/1001 means 29.97)
-	ffmpeg -ss $start_time -i "$input_dir/$participant/$video" -t $duration_sec -vf scale=-2:324 -sws_flags bicubic -an -r 15000/1001 -start_number 0 "$output_dir/$(printf '%05d' $id)/%05d.jpg" < /dev/null 2> /dev/null
+	ffmpeg -ss $start_time -i "$input_dir/$participant/$video" -t $duration_sec -vf scale=-2:324 -sws_flags bicubic -an -r 15000/1001 -start_number 0 -qscale:v "$quality" "$output_dir/$(printf '%05d' $id)/%05d.jpg" < /dev/null 2> /dev/null
 	
 
 	#ffmpeg -hwaccel cuvid -c:v h264_cuvid -ss $start_time -i "$input_dir/$participant/$video" -to $end_time -copyts -vf scale_npp=320:240 -c:v h264_nvenc -c:a copy "$output_dir/$verb/$(printf '%05d' $id).mp4" < /dev/null 2> /dev/null
