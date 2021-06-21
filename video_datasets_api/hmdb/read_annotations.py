@@ -17,7 +17,7 @@ def get_class_keys(classes_txt_path = os.path.join(SCRIPT_DIR, 'classes.txt')):
     """
     labels = []
     with open(classes_txt_path) as f:
-        labels = f.readlines()
+        labels = f.read().splitlines()
 
     assert len(labels) == NUM_CLASSES, "incorrect number of classes"
 
