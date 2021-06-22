@@ -1,10 +1,28 @@
 import os 
-_SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
+from scipy import io
+from .definitions import NUM_CLASSES
 
-def class_id_to_label():
-    classid_to_label = {}
-    with open(os.path.join(_SCRIPT_DIR, 'class_id.txt'), 'r') as f:
-        for i, line in enumerate(f.read().splitlines()):
-            classid_to_label[line] = i
-    return classid_to_label
+from typing import Any, Dict, List, Iterator, Optional, Tuple
 
+# modified from torchvision.datasets.imagenet
+# label is obtained by sorting the WordNet IDs.
+# index in the meta.mat is NOT the label.
+def parse_meta_mat(meta_mat_path:str) -> Tuple[Dict[int, int], Dict[str, int], List[str]]:
+    meta = io.loadmat(meta_mat_path, squeeze_me=True)['synsets']
+    nums_children = list(zip(*meta))[4]
+    meta = [meta[idx] for idx, num_children in enumerate(nums_children)
+	    if num_children == 0]
+    idcs, wnids, class_keys = list(zip(*meta))[:3]
+
+    # sort with wnid
+    sorted_classes = sorted(zip(idcs, wnids, class_keys), key=lambda tup: tup[1])
+    val_idx_to_label = {}
+    wnid_to_label = {}
+    class_keys = []
+    for label, (idc, wnid, class_key) in enumerate(sorted_classes):
+        class_keys.append(class_key)
+        wnid_to_label[wnid] = label
+        val_idx_to_label[idc] = label
+
+
+    return val_idx_to_label, wnid_to_label, class_keys
