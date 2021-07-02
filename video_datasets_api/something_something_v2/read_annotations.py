@@ -71,7 +71,7 @@ def get_class_keys(label_json_path):
 
     return labels
 
-def get_class_keys_shrinked(label_csv_path):
+def get_class_keys_shrinked(label_json_path):
     """
     Returns:
         class keys, but "something" is replaced by "[]"
