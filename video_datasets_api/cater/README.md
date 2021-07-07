@@ -106,7 +106,7 @@ and "For each action, we pick a random start and end time from within the 30-fra
 This is confusing because it sounds like there are 10 time slots throughout a video, and the actions should be defined within 0-29, 30-59, 60-89, ... frames.  
 However, you see that the start and end time of the movements don't follow the rule.
 
-In fact, the duration of the time slots is 20-38 frames chosen randomly, (explanation below)  
+In fact, the duration of the time slots is 20-40 frames chosen randomly, (explanation below)  
 and the new time slot starts one frame after the last time slot ends.
 ```python
 cur_frame = end_frame + 1
@@ -117,16 +117,16 @@ The time slot ends at the frame that every motion ends.
 `add_movements_multiObj_try()` returns `max(new_end_frame, new_end_frame_singleObjMotion)`)
 
 In each time slot, start the motion at timeslot_start+random.randint(0,10).  
-That means 0 to 9 frames of delay in the movement.  
+That means 0 to 10 frames of delay in the movement.  
 
-The duration of the movement is `random.randint(MOVEMENT_MIN, MOVEMENT_MAX)`, that is, 20-29 frames, since  
+The duration of the movement is `random.randint(MOVEMENT_MIN, MOVEMENT_MAX)`, that is, 20-30 frames, since  
 ```python
 MOVEMENT_MIN = 20
 MOVEMENT_MAX = 30
 ```
 [actions.py#L87](https://github.com/rohitgirdhar/CATER/blob/13a19643f1a2fb24e931df25abd74353e4f2fdcb/generate/actions.py#L87)  
 
-Therefore, the duration of the time slot is from 20 to 38. (`0 + 20 = 20` to `9 + 29 = 38`)  
+Therefore, the duration of the time slot is from 20 to 40. (`0 + 20 = 20` to `10 + 30 = 40`)  
 
 There is no time slot starting from frame > 270, because of 
 ```python
@@ -184,14 +184,11 @@ I made sure that my function generates exactly the same labels as the original o
 
 ## There are broken videos in the dataset?
 Yes, there are some broken videos in the dataset.  
-[`check_avi_broken()` in `gen_train_test.py`](https://github.com/rohitgirdhar/CATER/blob/13a19643f1a2fb24e931df25abd74353e4f2fdcb/generate/gen_train_test.py#L209) checks broken video files, but **it doesn't check if the video is generated fully.**
+[`check_avi_broken()` in `gen_train_test.py`](https://github.com/rohitgirdhar/CATER/blob/13a19643f1a2fb24e931df25abd74353e4f2fdcb/generate/gen_train_test.py#L209) checks broken video files, but **some videos are not generated fully or broken.**
 
 You have to extract the videos into frames, and check if they have frame 0 to frame 300, totalling 301 image files.  
-Or, you can use the provided video ids from this repository.
+Or, you can use the provided corrupted video ids from this repository.
 
 ```python
-from video_datasets_api.cater.trainval_splits.max2action.actions_present.train import video_ids    # task1 train video ids
-from video_datasets_api.cater.trainval_splits.max2action.actions_present.val import video_ids    # task1 val video ids
-from video_datasets_api.cater.trainval_splits.max2action.actions_order_uniq.train import video_ids    # task2 train video ids
-from video_datasets_api.cater.trainval_splits.max2action.actions_order_uniq.val import video_ids    # task2 val video ids
+from video_datasets_api.cater.definitions import CORRUPTED_VIDEO_IDS_MAX2ACTION
 ```
