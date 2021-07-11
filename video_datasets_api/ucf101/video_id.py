@@ -1,6 +1,6 @@
 import os 
 
-def get_unique_video_ids_from_videos(videos_dir: str, search_dirs: bool = False) -> dict:
+def get_unique_video_ids_from_videos(videos_dir: str, search_dirs: bool = False):
     videos_dir = os.path.join(videos_dir, '')
     video_list = []
     video_path_to_ids = {}
@@ -14,7 +14,12 @@ def get_unique_video_ids_from_videos(videos_dir: str, search_dirs: bool = False)
             search_list = files
 
         for name in search_list:
-            if name.endswith(".avi"):
+            if search_dirs:
+                name_relative = os.path.join(root.replace(videos_dir, ''), name) + '.avi'
+                video_list.append(name_relative)
+                video_path_to_ids[name_relative] = current_video_id
+                current_video_id += 1
+            elif name.endswith(".avi"):
                 name_relative = os.path.join(root.replace(videos_dir, ''), name)
                 video_list.append(name_relative)
                 video_path_to_ids[name_relative] = current_video_id
