@@ -13,5 +13,6 @@ setup(
     #package_dir={'video_datasets_api': 'src'},
     python_requires='>=3.5',
     install_requires=['numpy>=1.16.0',
-        'beautifulsoup4'],
+        'beautifulsoup4',
+        'pandas'],
 )
