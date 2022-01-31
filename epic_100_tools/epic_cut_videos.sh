@@ -66,6 +66,7 @@ do
 			echo " ERROR COULDN'T FIND THE VIDEO $video"
 			(( num_errors += 1 ))
 			error_videos="$error_videos$line\n"
+			continue
 		fi
 		echo "Using $video_path"
 		
