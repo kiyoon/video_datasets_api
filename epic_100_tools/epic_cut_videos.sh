@@ -61,6 +61,11 @@ do
 		elif [[ -f "$input_dir_extension/$participant/videos/$video" ]]
 		then
 			video_path="$input_dir_extension/$participant/videos/$video"
+		else
+			printf '\xF0\x9F\x98\xAD'	# loudly crying face
+			echo " ERROR COULDN'T FIND THE VIDEO $video"
+			(( num_errors += 1 ))
+			error_videos="$error_videos$line\n"
 		fi
 		echo "Using $video_path"
 		
