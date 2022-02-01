@@ -7,7 +7,7 @@ timestamp() {
 
 if [ $# -lt 4 ]
 then
-	echo "usage: $0 [input_dir_55 (should be .../videos/train)] [input_dir_extension] [output_dir] [annotations_root_dir]"
+	echo "usage: $0 [input_dir_55 (should be .../videos containing train and test folder)] [input_dir_extension] [output_dir] [annotations_root_dir]"
 	echo "EPIC-55 and 100 have different directory structure. You can put two input directories (55 and extension), or just put same directory if you have them combined."
 	exit 1
 fi
@@ -55,9 +55,12 @@ do
 
 		echo $index / $num_segments
 		
-		if [[ -f "$input_dir_55/$participant/$video" ]]
+		if [[ -f "$input_dir_55/train/$participant/$video" ]]
 		then
-			video_path="$input_dir_55/$participant/$video"
+			video_path="$input_dir_55/train/$participant/$video"
+		elif [[ -f "$input_dir_55/test/$participant/$video" ]]
+		then
+			video_path="$input_dir_55/test/$participant/$video"
 		elif [[ -f "$input_dir_extension/$participant/videos/$video" ]]
 		then
 			video_path="$input_dir_extension/$participant/videos/$video"
@@ -68,9 +71,11 @@ do
 			error_videos="$error_videos$line\n"
 			continue
 		fi
-		echo "Using $video_path"
+
+		output_path="$output_dir/$split/$id.mp4"
+		echo "Using $video_path -> Output $output_path"
 		
-		ffmpeg -ss $start_time -i "$video_path" -t $duration_sec -vf scale=-2:324 -sws_flags bicubic -c:v libx264 -preset fast -crf 22 -color_range pc -colorspace bt709 -color_trc bt709 -color_primaries bt709 -pix_fmt yuvj420p -an -r 15000/1001 "$output_dir/$split/$id.mp4" < /dev/null 2> /dev/null
+		ffmpeg -ss $start_time -i "$video_path" -t $duration_sec -vf scale=-2:324 -sws_flags bicubic -c:v libx264 -preset fast -crf 22 -color_range pc -colorspace bt709 -color_trc bt709 -color_primaries bt709 -pix_fmt yuvj420p -an -r 15000/1001 "$output_path" < /dev/null 2> /dev/null
 
 		#ffmpeg -hwaccel cuvid -c:v h264_cuvid -ss $start_time -i "$input_dir/$participant/$video" -to $end_time -copyts -vf scale_npp=320:240 -c:v h264_nvenc -c:a copy "$output_dir/$verb/$(printf '%05d' $id).mp4" < /dev/null 2> /dev/null
 		# normal: 6.52s after 30 segments
