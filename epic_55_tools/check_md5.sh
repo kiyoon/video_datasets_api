@@ -8,10 +8,10 @@ then
 fi
 
 
-epic100_dir="$1"
+epic_dir="$1"
 md5csv="$2"
 
 md5file=$(cat "$md5csv" | grep ",55$" | awk -F, '{print $1" "$2}')
 
-cd "$epic100_dir"
+cd "$epic_dir"
 md5sum -c <(echo "$md5file")
