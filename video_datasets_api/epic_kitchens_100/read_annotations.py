@@ -37,7 +37,7 @@ def epic_narration_id_to_unique_id(annotations_root_dir: str):
 
 
 
-def get_verb_uid2label_dict(annotations_rood_dir: str, narration_id_to_video_id = None):
+def get_verb_uid2label_dict(annotations_root_dir: str, narration_id_to_video_id = None):
     train_pkl = os.path.join(annotations_root_dir, 'EPIC_100_train.pkl')
     val_pkl = os.path.join(annotations_root_dir, 'EPIC_100_validation.pkl')
 
@@ -51,7 +51,7 @@ def get_verb_uid2label_dict(annotations_rood_dir: str, narration_id_to_video_id 
     
     num_videos = len(train_labels.index)
     for index in range(num_videos):
-        narration_id = train_labels.index.iloc[index]
+        narration_id = train_labels.index[index]
         uid = narration_id_to_video_id[narration_id]
         verb_label = train_labels.verb_class.iloc[index]
 
@@ -62,7 +62,7 @@ def get_verb_uid2label_dict(annotations_rood_dir: str, narration_id_to_video_id 
 
     num_videos = len(val_labels.index)
     for index in range(num_videos):
-        narration_id = val_labels.index.iloc[index]
+        narration_id = val_labels.index[index]
         uid = narration_id_to_video_id[narration_id]
         verb_label = val_labels.verb_class.iloc[index]
 
