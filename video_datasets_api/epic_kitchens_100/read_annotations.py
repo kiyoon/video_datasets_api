@@ -1,5 +1,6 @@
 import pandas
 import pickle
+import os
 
 def epic_narration_id_to_unique_id(annotations_root_dir: str):
     def sort_narration_id(narration_id: str):
