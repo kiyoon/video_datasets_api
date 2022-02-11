@@ -44,6 +44,7 @@ def get_verb_uid2label_dict(annotations_root_dir: str, narration_id_to_video_id 
     if narration_id_to_video_id is None:
         narration_id_to_video_id, _ = epic_narration_id_to_unique_id(annotations_root_dir)
 
+    narration_id_to_label = {}
     uid2label = {}
 
     with open(train_pkl, 'rb') as f:
@@ -55,6 +56,7 @@ def get_verb_uid2label_dict(annotations_root_dir: str, narration_id_to_video_id 
         uid = narration_id_to_video_id[narration_id]
         verb_label = train_labels.verb_class.iloc[index]
 
+        narration_id_to_label[narration_id] = verb_label
         uid2label[uid] = verb_label
 
     with open(val_pkl, 'rb') as f:
@@ -66,6 +68,7 @@ def get_verb_uid2label_dict(annotations_root_dir: str, narration_id_to_video_id 
         uid = narration_id_to_video_id[narration_id]
         verb_label = val_labels.verb_class.iloc[index]
 
+        narration_id_to_label[narration_id] = verb_label
         uid2label[uid] = verb_label
 
-    return uid2label
+    return narration_id_to_label, uid2label
