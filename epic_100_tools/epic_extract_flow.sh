@@ -24,7 +24,7 @@ error_videos=""
 while read tarfile
 do
 	participant=$(echo "$tarfile" | awk -F/ '{print $4}')
-	videoid=$(echo "$tarfile" | awk -F/ '{print $5}' | xargs basename)
+	videoid=$(echo "$tarfile" | awk -F/ '{print $5}' | awk -F. '{print $1}')
 	extract_dir="$output_dir/$participant/$videoid"
 	echo "Extracting $epic55_dir/$tarfile to $extract_dir"
 	mkdir -p "$extract_dir"
@@ -43,9 +43,9 @@ done <<< "$epic55_flow_tars"
 while read tarfile
 do
 	participant=$(echo "$tarfile" | awk -F/ '{print $1}')
-	videoid=$(echo "$tarfile" | awk -F/ '{print $3}' | xargs basename)
+	videoid=$(echo "$tarfile" | awk -F/ '{print $3}' | awk -F. '{print $1}')
 	extract_dir="$output_dir/$participant/$videoid"
-	echo "Extracting $epic55_dir/$tarfile to $extract_dir"
+	echo "Extracting $epic100_dir/$tarfile to $extract_dir"
 	mkdir -p "$extract_dir"
 	if tar xf "$epic100_dir/$tarfile" -C "$extract_dir"
 	then
