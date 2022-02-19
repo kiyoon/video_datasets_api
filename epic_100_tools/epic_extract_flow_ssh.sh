@@ -29,7 +29,7 @@ do
 	extract_dir="$output_dir/$participant/$videoid"
 	echo "Extracting $ssh_hostname:$epic55_dir/$tarfile to $extract_dir"
 	mkdir -p "$extract_dir"
-	if ssh "$ssh_hostname" "cat '$epic55_dir/$tarfile'" | tar xf - -C "$extract_dir"
+	if ssh -n "$ssh_hostname" "cat '$epic55_dir/$tarfile'" | tar xf - -C "$extract_dir"
 	then
 		true
 	else
@@ -48,7 +48,7 @@ do
 	extract_dir="$output_dir/$participant/$videoid"
 	echo "Extracting $ssh_hostname:$epic100_dir/$tarfile to $extract_dir"
 	mkdir -p "$extract_dir"
-	if ssh "$ssh_hostname" "cat '$epic100_dir/$tarfile'" | tar xf - -C "$extract_dir"
+	if ssh -n "$ssh_hostname" "cat '$epic100_dir/$tarfile'" | tar xf - -C "$extract_dir"
 	then
 		true
 	else
