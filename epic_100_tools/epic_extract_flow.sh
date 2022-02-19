@@ -14,8 +14,8 @@ output_dir="$3"
 md5_csv="$4"
 
 
-epic55_flow_tars=$(cat "$md5_csv" | grep /flow/ | awk -F, '{print $2}')
-epic100_flow_tars=$(cat "$md5_csv" | grep /flow_frames/ | awk -F, '{print $2}')
+epic55_flow_tars=$(cat "$md5_csv" | grep /flow/ | awk -F, '{print $2}' | sort)
+epic100_flow_tars=$(cat "$md5_csv" | grep /flow_frames/ | awk -F, '{print $2}' | sort)
 
 
 num_errors=0
