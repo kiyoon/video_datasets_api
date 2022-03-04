@@ -7,7 +7,9 @@ import os
 
 import argparse
 def get_parser():
-    parser = argparse.ArgumentParser(description="From the extracted optical flow directory, hard-link copy only the ones used in action recognition to another folder. You MUST run epic_convert_rgb_to_flow_frame_idxs.py before running this.",
+    parser = argparse.ArgumentParser(description=("From the extracted optical flow directory, hard-link copy only the ones used in action recognition to another folder.\n"
+        "This will reduce from 252GiB to 153GiB.\n"
+        "You MUST run epic_convert_rgb_to_flow_frame_idxs.py before running this."),
             formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("flow_dir", help="Path to the directory with flow files. (EPIC-100 extensions directory)")
     parser.add_argument("output_dir", help="Directory to save train.csv and val.csv")
@@ -40,8 +42,6 @@ if __name__ == '__main__':
             start_frame = epic_action_labels.start_frame.iloc[index]
             stop_frame = epic_action_labels.stop_frame.iloc[index]
 
-            dir_path = os.path.join(args.epic100_dir, narration_id)
-            
             if epicvideo_id in used_frames.keys():
                 used_frames[epicvideo_id].extend(range(start_frame, stop_frame+1))
             else:
@@ -57,7 +57,10 @@ if __name__ == '__main__':
         for flow_dir in flow_dirs:
             input_dir = os.path.join(args.flow_dir, participant_id, epicvideo_id, flow_dir)
             output_dir = os.path.join(args.output_dir, participant_id, epicvideo_id, flow_dir)
-            os.makedirs(output_dir)
+            os.makedirs(output_dir, exist_ok=True)
             for file_to_keep in files_to_keep:
-                os.link(os.path.join(input_dir, file_to_keep), os.path.join(output_dir, file_to_keep))
+                try:
+                    os.link(os.path.join(input_dir, file_to_keep), os.path.join(output_dir, file_to_keep))
+                except FileExistsError as e:
+                    pass
 
