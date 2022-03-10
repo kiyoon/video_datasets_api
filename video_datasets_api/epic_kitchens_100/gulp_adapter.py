@@ -8,6 +8,7 @@ import pandas as pd
 from gulpio2.adapters import AbstractDatasetAdapter
 from gulpio2.utils import resize_images
 
+from simplejpeg import decode_jpeg_header
 
 Result = Dict[str, Any]
 
@@ -80,7 +81,10 @@ class EpicDatasetAdapter(AbstractDatasetAdapter):
             else:
                 frames = paths
                 # Load only one file to check the frame size.
-                meta["frame_size"] = list(resize_images([str(paths[0])], -1))[0].shape
+                with open(str(paths[0]), 'rb') as f:
+                    first_frame_jpeg = f.read()
+                h, w, colour, _ = decode_jpeg_header(first_frame_jpeg)
+                meta["frame_size"] = (h, w, 3) if colour == 'rgb' else (h, w)
             meta["num_frames"] = len(frames)
 
             result = {"meta": meta, "frames": frames, "id": (self.get_uid(meta))}
@@ -135,7 +139,11 @@ class EpicFlowDatasetAdapter(EpicDatasetAdapter):
             else:
                 for axis in "u", "v":
                     frames[axis] = paths[axis]
-                meta["frame_size"] = list(resize_images([str(paths["u"][0])], -1))[0].shape
+                # Load only one file to check the frame size.
+                with open(str(paths["u"][0]), 'rb') as f:
+                    first_frame_jpeg = f.read()
+                h, w, colour, _ = decode_jpeg_header(first_frame_jpeg)
+                meta["frame_size"] = (h, w, 3) if colour == 'rgb' else (h, w)
 
             meta["num_frames"] = len(frames["u"])
             result = {
