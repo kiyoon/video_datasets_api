@@ -74,8 +74,13 @@ class EpicDatasetAdapter(AbstractDatasetAdapter):
                 folder / f"frame_{idx:010d}.jpg"
                 for idx in range(meta["start_frame"], meta["stop_frame"] + 1)
             ]
-            frames = list(resize_images(map(str, paths), self.frame_size))
-            meta["frame_size"] = frames[0].shape
+            if self.frame_size > 0:
+                frames = list(resize_images(map(str, paths), self.frame_size))
+                meta["frame_size"] = frames[0].shape
+            else:
+                frames = paths
+                # Load only one file to check the frame size.
+                meta["frame_size"] = list(resize_images([str(paths[0])], -1))[0].shape
             meta["num_frames"] = len(frames)
 
             result = {"meta": meta, "frames": frames, "id": (self.get_uid(meta))}
@@ -123,12 +128,15 @@ class EpicFlowDatasetAdapter(EpicDatasetAdapter):
             }
 
             frames = {}
-            for axis in "u", "v":
-                frames[axis] = list(
-                    resize_images(map(str, paths[axis]), self.frame_size)
-                )
+            if self.frame_size > 0:
+                for axis in "u", "v":
+                    frames[axis] = list(resize_images(map(str, paths[axis]), self.frame_size))
+                meta["frame_size"] = frames["u"][0].shape
+            else:
+                for axis in "u", "v":
+                    frames[axis] = paths[axis]
+                meta["frame_size"] = list(resize_images([str(paths["u"][0])], -1))[0].shape
 
-            meta["frame_size"] = frames["u"][0].shape
             meta["num_frames"] = len(frames["u"])
             result = {
                 "meta": meta,
