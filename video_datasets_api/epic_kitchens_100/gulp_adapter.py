@@ -115,7 +115,7 @@ class EpicDatasetAdapter(AbstractDatasetAdapter):
 class EpicFlowDatasetAdapter(EpicDatasetAdapter):
     """Gulp Dataset Adapter for Gulping flow frames extracted from the EPIC-KITCHENS dataset"""
 
-    def iter_data(self, slice_element=None):
+    def iter_data(self, slice_element=None) -> Iterator[Result]:
         slice_element = slice_element or slice(0, len(self))
         for meta in self.meta_data[slice_element]:
             video_id = meta["video_id"]
@@ -126,7 +126,7 @@ class EpicFlowDatasetAdapter(EpicDatasetAdapter):
             paths = {
                 axis: [
                     folder / axis / f"frame_{idx:010d}.jpg"
-                    for idx in range(start_frame, stop_frame)
+                    for idx in range(start_frame, stop_frame+1)
                 ]
                 for axis in ["u", "v"]
             }
@@ -143,7 +143,8 @@ class EpicFlowDatasetAdapter(EpicDatasetAdapter):
                 with open(str(paths["u"][0]), 'rb') as f:
                     first_frame_jpeg = f.read()
                 h, w, colour, _ = decode_jpeg_header(first_frame_jpeg)
-                meta["frame_size"] = (h, w, 3) if colour == 'rgb' else (h, w)
+                assert colour == 'gray', f'The colourspace of the image {paths[self.flow_direction_x][0]} is {colour}, but it needs to be "gray"'
+                meta["frame_size"] = (h, w)
 
             meta["num_frames"] = len(frames["u"])
             result = {
