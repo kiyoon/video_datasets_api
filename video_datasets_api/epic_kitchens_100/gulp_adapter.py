@@ -143,7 +143,7 @@ class EpicFlowDatasetAdapter(EpicDatasetAdapter):
                 with open(str(paths["u"][0]), 'rb') as f:
                     first_frame_jpeg = f.read()
                 h, w, colour, _ = decode_jpeg_header(first_frame_jpeg)
-                assert colour == 'gray', f'The colourspace of the image {paths[self.flow_direction_x][0]} is {colour}, but it needs to be "gray"'
+                assert colour == 'Gray', f'The colourspace of the image {paths["u"][0]} is {colour}, but it needs to be "gray"'
                 meta["frame_size"] = (h, w)
 
             meta["num_frames"] = len(frames["u"])
