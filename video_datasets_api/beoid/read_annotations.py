@@ -1,8 +1,11 @@
 import os
 from dataclasses import dataclass
 from .definitions import NUM_VIDEOS, NUM_CLIPS
+#NUM_VIDEOS = 58
+#NUM_CLIPS = 764
+#from timeit import timeit
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, order=True)
 class BEOIDClipLabel:
     filename_wo_ext: str
     clip_id_str: str
@@ -11,9 +14,18 @@ class BEOIDClipLabel:
     end_frame: int
     verb_label: str
     noun_labels: list[str]
+    # automatically created str-based label
+    label_str: str = None
 
+    def __post_init__(self):
+        # Set labels in str form.
+        # pick up plug -> pick-up_plug
+        # insert screwdriver, wire -> insert_screwdriver+wire
+        noun_labels_wo_space = [label.replace(' ', '-') for label in self.noun_labels]
+        object.__setattr__(self, 'label_str', f'{self.verb_label.replace(" ", "-")}_{"+".join(noun_labels_wo_space)}')
+        
 
-def read_all_annotations(annotations_root_dir: str) -> list[BEOIDClipLabel]:
+def read_all_annotations(annotations_root_dir: str) -> tuple[BEOIDClipLabel]:
     """
     As well as reading all labels, it will assign unique clip ID in string and integer form.
 
@@ -52,11 +64,13 @@ def read_all_annotations(annotations_root_dir: str) -> list[BEOIDClipLabel]:
             clip_id += 1
 
     assert len(BEOID_all_labels) == NUM_CLIPS, f'Some label files seem to be missing or corrupted. You should have {NUM_CLIPS} video clips but it read {len(BEOID_all_labels)} clips.'
-    return BEOID_all_labels
+    return _beoid_all_labels
 
 
 if __name__ == '__main__':
 
+#    print(timeit(lambda: read_all_annotations('/home/s1884147/scratch2/datasets/BEOID/Annotations'), number=1))
+#    print(timeit(lambda: read_all_annotations('/home/s1884147/scratch2/datasets/BEOID/Annotations'), number=1000))
     BEOID_all_labels = read_all_annotations('/home/s1884147/scratch2/datasets/BEOID/Annotations')
     for BEOID_clip_label in BEOID_all_labels:
         print(BEOID_clip_label)
