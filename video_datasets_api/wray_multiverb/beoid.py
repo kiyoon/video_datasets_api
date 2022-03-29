@@ -15,6 +15,7 @@ from .class_keys import read_class_keys
 # 23 verb classes
 # Use class_filter_indices() to get filtering indices from the Wray labels.
 Wray_verb_class_keys_filtered = ('move', 'open', 'pull-out', 'plug', 'insert', 'press', 'pull', 'rotate', 'scan', 'switch-on', 'fill', 'hold-down', 'scoop', 'take', 'stir', 'pick-up', 'put', 'pour', 'turn', 'let-go', 'place', 'push', 'rinse')
+NUM_CLASSES = len(Wray_verb_class_keys_filtered)
 
 
 # Verb, noun spaces are replaced to -
