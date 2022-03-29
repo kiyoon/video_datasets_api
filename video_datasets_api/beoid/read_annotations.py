@@ -1,5 +1,5 @@
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from .definitions import NUM_VIDEOS, NUM_CLIPS
 #NUM_VIDEOS = 58
 #NUM_CLIPS = 764
@@ -15,7 +15,7 @@ class BEOIDClipLabel:
     verb_label: str
     noun_labels: list[str]
     # automatically created str-based label
-    label_str: str = None
+    label_str: str = field(init=False)
 
     def __post_init__(self):
         # Set labels in str form.
@@ -54,9 +54,9 @@ def read_all_annotations(annotations_root_dir: str) -> tuple[BEOIDClipLabel]:
             fields = line.split(',')
             start_frame = int(fields[0])
             end_frame = int(fields[1])
-            verb_label = fields[2].split('.v.')[0]
+            verb_label = fields[2].split('.v.')[0].replace(' ', '-')
             noun_label = fields[3:]
-            noun_label = [noun.strip() for noun in noun_label]
+            noun_label = [noun.strip().replace(' ', '-') for noun in noun_label]
             if noun_label[-1] == '':
                 del noun_label[-1]
 
@@ -64,7 +64,7 @@ def read_all_annotations(annotations_root_dir: str) -> tuple[BEOIDClipLabel]:
             clip_id += 1
 
     assert len(BEOID_all_labels) == NUM_CLIPS, f'Some label files seem to be missing or corrupted. You should have {NUM_CLIPS} video clips but it read {len(BEOID_all_labels)} clips.'
-    return _beoid_all_labels
+    return BEOID_all_labels
 
 
 if __name__ == '__main__':
