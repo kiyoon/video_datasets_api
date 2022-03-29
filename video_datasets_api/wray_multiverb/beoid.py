@@ -192,6 +192,33 @@ def main():
         print(label)
 
 
+    num_multiverbs = 0
+    for label in BEOID_all_labels:
+        num_multiverbs += len(label.wray_multiverb_str)
+    num_multiverbs /= len(BEOID_all_labels)
+    
+    print(f'{num_multiverbs = }')
+
+
+    num_multiverbs_except_originalverb = 0
+    for label in BEOID_all_labels:
+        multiverb_except_originalverb = set(label.wray_multiverb_str)
+        multiverb_except_originalverb.discard(label.wray_verblabel_str)
+        num_multiverbs_except_originalverb += len(multiverb_except_originalverb)
+    num_multiverbs_except_originalverb /= len(BEOID_all_labels)
+    
+    print(f'{num_multiverbs_except_originalverb = }')
+
+
+    num_segments_per_class = {}
+    for label in Wray_verb_class_keys_filtered:
+        num_segments_per_class[label] = 0
+    for label in BEOID_all_labels:
+        num_segments_per_class[label.wray_verblabel_str] += 1
+
+    print(f"{num_segments_per_class = }")
+
+
 if __name__ == '__main__':
     main()
 
