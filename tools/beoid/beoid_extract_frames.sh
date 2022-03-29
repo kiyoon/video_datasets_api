@@ -2,7 +2,8 @@
 
 if [ $# -lt 2 ]
 then
-	echo "usage: $0 [input_dir] [output_dir] [quality=5 (2(best)-31(worst))]"
+	echo "usage: $0 [input_dir] [output_dir]"
+	echo "CATER videos are MJPEG, so it will extract JPEG straight from the video instead of processing them once more."
 	exit 1
 fi
 
@@ -39,7 +40,7 @@ do
 	mkdir -p "$frames_dir"
 	# -qscale:v : 1~31 where 31 is the worst quality
 	# when -qscale:v == 1, -qmin 1 need to be added
-	ffmpeg -i "$line" -start_number 1 -qscale:v "$quality" "$frames_dir/%05d.jpg" < /dev/null 2> /dev/null
+	ffmpeg -i "$line" -start_number 1 -c:v copy -bsf:v mjpeg2jpeg "$frames_dir/%05d.jpg" < /dev/null 2> /dev/null
 	RC=$?
 	if [ "${RC}" -ne "0" ]; then
 		# Do something to handle the error.
