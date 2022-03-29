@@ -15,7 +15,7 @@ setup(
     install_requires=['numpy>=1.16.0',
         'beautifulsoup4',
         'pandas',
-        'gulpio2',
+        'gulpio2 @ git+https://github.com/kiyoon/GulpIO2',
         'natsort',
         ],
 )

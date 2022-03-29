@@ -16,6 +16,7 @@ from .class_keys import read_class_keys
 # Use class_filter_indices() to get filtering indices from the Wray labels.
 Wray_verb_class_keys_filtered = ('move', 'open', 'pull-out', 'plug', 'insert', 'press', 'pull', 'rotate', 'scan', 'switch-on', 'fill', 'hold-down', 'scoop', 'take', 'stir', 'pick-up', 'put', 'pour', 'turn', 'let-go', 'place', 'push', 'rinse')
 
+
 # Verb, noun spaces are replaced to -
 # Noun separator is +
 Wray_class_key_to_BEOID_class_keys = MappingProxyType({
@@ -64,19 +65,38 @@ BEOID_class_keys_to_ignore = (
 
 
 @dataclass(frozen=True, order=True)
-class BEOIDMultiVerbLabel(BEOIDClipLabel):
-    multiverb_filtered_softlabel: list[float]
-    multiverb_filtered_str: list[float]
+class BEOIDMultiVerb23Label(BEOIDClipLabel):
+    """
+    Filtered version (23 verbs) of the original Wray label (90 verbs).
+    Using the verbs that exist in the Wray's 34 verb+noun suggestions.
+    """
+    wray_verblabel_str: str
+    wray_verblabel_idx: int
+    wray_multiverb_softlabel: list[float]
+    wray_multiverb_str: list[str]
+    wray_multiverb_idx: list[int]
 
 
     @classmethod
-    def from_BEOIDClipLabel(cls, instance: BEOIDClipLabel, /, multiverb_filtered_softlabel: list[float], threshold = 0.2):
-        print(instance.label_str)
+    def from_BEOIDClipLabel(cls, instance: BEOIDClipLabel, /,
+            multiverb_filtered_softlabel: list[float],
+            l1_norm = True,
+            threshold = 0.15):
+
         if instance.label_str in BEOID_class_keys_to_ignore:
             return None
 
         dict_instance = asdict(instance)
         del dict_instance['label_str']      # Remove non-init values.
+
+        # Single verb label
+        beoid_to_wray_key = BEOID_class_key_to_Wray_class_key()
+        wray_verblabel_str = beoid_to_wray_key[instance.label_str].split('_')[0]
+        wray_verblabel_idx = Wray_verb_class_keys_filtered.index(wray_verblabel_str)
+
+        if l1_norm:
+            sum_softlabel = sum(multiverb_filtered_softlabel)
+            multiverb_filtered_softlabel = [score / sum_softlabel for score in multiverb_filtered_softlabel]
 
         # Threshold soft labels
         multiverb_filtered_str = []
@@ -84,11 +104,17 @@ class BEOIDMultiVerbLabel(BEOIDClipLabel):
             if label >= threshold:
                 multiverb_filtered_str.append(Wray_verb_class_keys_filtered[idx])
 
-        return cls(**dict_instance, multiverb_filtered_softlabel = multiverb_filtered_softlabel, multiverb_filtered_str = multiverb_filtered_str)
+        multiverb_idx = []
+        for label in multiverb_filtered_str:
+            multiverb_idx.append(Wray_verb_class_keys_filtered.index(label))
+
+        return cls(**dict_instance, wray_verblabel_str = wray_verblabel_str, wray_verblabel_idx = wray_verblabel_idx,
+                wray_multiverb_softlabel = multiverb_filtered_softlabel, wray_multiverb_str = multiverb_filtered_str,
+                wray_multiverb_idx = multiverb_idx)
     
 
 @lru_cache
-def BEOID_class_key_to_Wray_class_key() -> MappingProxyType:
+def BEOID_class_key_to_Wray_class_key() -> MappingProxyType[str, str]:
     ret = {}
     for k, v in Wray_class_key_to_BEOID_class_keys.items():
         for beoid_class_key in v:
@@ -142,7 +168,7 @@ def read_all_annotations(wray_annotations_root_dir: str, BEOID_annotations_root_
     clip_labels = []
     for label in BEOID_all_labels:
         if label.label_str in beoid_key_to_wray_label:
-            new_label = BEOIDMultiVerbLabel.from_BEOIDClipLabel(label, beoid_key_to_wray_label[label.label_str], threshold=0.2)
+            new_label = BEOIDMultiVerb23Label.from_BEOIDClipLabel(label, beoid_key_to_wray_label[label.label_str], threshold=0.2)
             clip_labels.append(new_label)
 
     return clip_labels

@@ -4,7 +4,6 @@ from typing import Dict
 from typing import Iterator
 from typing import List
 
-import pandas as pd
 from gulpio2.adapters import AbstractDatasetAdapter
 from gulpio2.utils import resize_images
 
@@ -95,7 +94,7 @@ class GenericJpegDatasetAdapter(AbstractDatasetAdapter):
         return len(self.segment_ids)
 
     @staticmethod
-    def _iterate_and_generate_keys(video_segment_dir: str) -> List[Dict[str, Any]]:
+    def _iterate_and_generate_keys(video_segment_dir: str) -> List[str]:
         data = []
         dirs = os.listdir(video_segment_dir)
         for dirname in dirs:

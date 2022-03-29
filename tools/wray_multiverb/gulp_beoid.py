@@ -7,21 +7,30 @@ from multiprocessing import cpu_count
 from pathlib import Path
 
 from gulpio2 import GulpIngestor
-from video_datasets_api.gulpio import GenericJpegDatasetAdapter, GenericGreyFlowDatasetAdapter
+from video_datasets_api.wray_multiverb.beoid_gulp_adaptor import WrayBEOIDAdapter
+from video_datasets_api.wray_multiverb.beoid import read_all_annotations
 
 
 parser = argparse.ArgumentParser(
-    "Gulp video dataset allowing for faster read times during training."
+    "Gulp the BEOID dataset allowing for faster read times during training."
 )
 parser.add_argument(
-    "in_folder",
+    "frames_folder",
     type=Path,
     help="Directory where subdirectory is a segment name containing frames for that segment.",
 )
 parser.add_argument(
     "out_folder", type=Path, help="Directory to store the gulped files."
 )
-parser.add_argument("modality", choices=["flow", "rgb"])
+parser.add_argument(
+    "wray_annotations_root_dir",
+    type=Path,
+)
+parser.add_argument(
+    "BEOID_annotations_root_dir",
+    type=Path,
+)
+parser.add_argument("--modality", choices=["flow", "rgb"], default='rgb')
 parser.add_argument("--flow_direction_x", default='u', help="Flow directory name for x direction.")
 parser.add_argument("--flow_direction_y", default='v', help="Flow directory name for x direction.")
 parser.add_argument("--frame_size", type=int, default=-1, help="Shorter side of the frame size. -1 bypasses resizing.")
@@ -42,12 +51,13 @@ parser.add_argument(
 
 def main(args):
     if args.modality.lower() == "flow":
-        gulp_adapter = GenericGreyFlowDatasetAdapter(
-            str(args.in_folder), args.frame_size, args.flow_direction_x, args.flow_direction_y
-        )
+        raise NotImplementedError()
     elif args.modality.lower() == "rgb":
-        gulp_adapter = GenericJpegDatasetAdapter(
-            str(args.in_folder), args.frame_size,
+        segments_info = read_all_annotations(str(args.wray_annotations_root_dir), str(args.BEOID_annotations_root_dir))
+        gulp_adapter = WrayBEOIDAdapter(
+            str(args.frames_folder),
+            segments_info,
+            args.frame_size,
         )
     else:
         raise ValueError("Modality '{}' not supported".format(args.modality))
