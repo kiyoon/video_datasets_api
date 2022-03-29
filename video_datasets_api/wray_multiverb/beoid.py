@@ -80,8 +80,8 @@ class BEOIDMultiVerb23Label(BEOIDClipLabel):
     @classmethod
     def from_BEOIDClipLabel(cls, instance: BEOIDClipLabel, /,
             multiverb_filtered_softlabel: list[float],
-            l1_norm = True,
-            threshold = 0.15):
+            l1_norm = False,
+            threshold = 0.2):
 
         if instance.label_str in BEOID_class_keys_to_ignore:
             return None
