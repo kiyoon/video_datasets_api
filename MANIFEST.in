@@ -1,1 +1,1 @@
-include video_datasts_api
+recursive-include video_datasts_api *.py *.txt *.md
