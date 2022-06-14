@@ -1,8 +1,8 @@
 #!/bin/bash
 
-if [ $# -lt 5 ]
+if [ $# -lt 4 ]
 then
-	echo "usage: $0 [frames_dir] [output_dir] [gpu_devices..]"
+	echo "usage: $0 [frames_dir] [output_dir] [gpu_arch (turing/pascal)] [gpu_devices..]"
 	echo "Extracts optical flow using docker."
 	echo "Frames has to be extracted as frames and the directory name should end with '.avi'."
 	echo "It will create a screen session and execute multiple processes to process different parts of the dataset."
@@ -11,7 +11,8 @@ fi
 
 input_dir="$1"
 output_dir="$2"
-gpu_devices=( "${@:3}" )
+gpu_arch="$3"
+gpu_devices=( "${@:4}" )
 num_gpus=${#gpu_devices[@]}
 
 sess="flow_multigpu"
@@ -26,7 +27,7 @@ do
         screen -S "$sess" -X screen $window
     fi
 
-	command="bash extract_flow_partition.sh '$input_dir' '$output_dir' $num_gpus $window ${gpu_devices[$window]}\n"
+	command="bash extract_flow_partition.sh '$input_dir' '$output_dir' $num_gpus $window ${gpu_devices[$window]} $gpu_arch\n"
     screen -S "$sess" -p $window -X stuff "$command"
 done
 

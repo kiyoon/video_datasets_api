@@ -1,8 +1,8 @@
 #!/bin/bash
 
-if [ $# -lt 5 ]
+if [ $# -lt 6 ]
 then
-	echo "usage: $0 [frames_dir] [output_dir] [divide_job_count] [divide_job_index] [gpu_device]"
+	echo "usage: $0 [videos_dir] [output_dir] [divide_job_count] [divide_job_index] [gpu_device] [gpu_arch (turing/pascal)]"
 	echo "Extracts optical flow using docker."
 	echo "Frames has to be extracted as frames and the directory name should end with '.avi'."
 	echo "divide_job_count > 1 will execute it to only part of the data. divide_job_index should be 0, 1, ..., divide_job_count-1"
@@ -14,6 +14,7 @@ output_dir="$2"
 divide_job_count="$3"
 divide_job_index="$4"
 gpu_device="$5"
+gpu_arch="$6"
 
 
 mkdir -p "$output_dir"
@@ -21,7 +22,7 @@ mkdir -p "$output_dir"
 bash_start_time=$(date +%s.%N)
 
 
-all_videos=$(find "$input_dir" -mindepth 2 -maxdepth 2 -name "*.avi" -type d | sort)
+all_videos=$(find "$input_dir" -mindepth 2 -maxdepth 2 -name "*.avi" -type f | sort)
 num_all_segments=$(echo "$all_videos" | wc -l)
 num_part_segments="$((num_all_segments / divide_job_count))"
 
@@ -50,11 +51,15 @@ while read line
 do
 	echo $index / $num_part_segments
 
+	video_name=$(basename "$line")
+	video_dir=$(dirname "$line")
+	
 	relative_path=$(realpath --relative-to="$input_dir" "$line")
+	relative_dir=$(dirname "$relative_path")
 	echo "$relative_path"
 
-	mkdir -p "$output_dir/$relative_path"
-	docker run --gpus "device=$gpu_device" --rm -u $UID:$UID -v "$line:/input" -v "$output_dir/$relative_path:/output" willprice/furnari-flow %05d.jpg -g 0 -s 1 -d 1 -b 8
+	mkdir -p "$output_dir/$relative_dir"
+	docker run --gpus "device=$gpu_device" --rm -u $UID:$UID -v "$video_dir:/input" -v "$output_dir/$relative_dir:/output" kiyoon/denseflow:$gpu_arch "/input/$video_name" -b=20 -a=tvl1 -s=1 -v -o=/output
 	RC=$?
 	if [ "${RC}" -ne "0" ]; then
 		# Do something to handle the error.
