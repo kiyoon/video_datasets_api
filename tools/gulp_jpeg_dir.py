@@ -7,7 +7,7 @@ from multiprocessing import cpu_count
 from pathlib import Path
 
 from gulpio2 import GulpIngestor
-from video_datasets_api.gulpio import GenericJpegDatasetAdapter, GenericGreyFlowDatasetAdapter
+from video_datasets_api.gulpio import GenericJpegDatasetAdapter, GenericGreyFlowDatasetAdapter, GlobPatternGreyFlowDatasetAdapter
 
 
 parser = argparse.ArgumentParser(
@@ -21,9 +21,12 @@ parser.add_argument(
 parser.add_argument(
     "out_folder", type=Path, help="Directory to store the gulped files."
 )
-parser.add_argument("modality", choices=["flow", "rgb"])
+parser.add_argument("modality", choices=["flow", "rgb", "flow_onefolder"], help='flow_onefolder has x and y direction in a same folder.')
+parser.add_argument("--class_folder", action='store_true', help="The directory structure is expected to have classes first and then segments.")
 parser.add_argument("--flow_direction_x", default='u', help="Flow directory name for x direction.")
 parser.add_argument("--flow_direction_y", default='v', help="Flow directory name for x direction.")
+parser.add_argument("--flow_x_filename_pattern", default='flow_x_*.jpg', help="Flow filename pattern for x direction (flow_onefolder)")
+parser.add_argument("--flow_y_filename_pattern", default='flow_y_*.jpg', help="Flow filename pattern for y direction (flow_onefolder)")
 parser.add_argument("--frame_size", type=int, default=-1, help="Shorter side of the frame size. -1 bypasses resizing.")
 parser.add_argument(
     "--segments_per_chunk",
@@ -43,11 +46,15 @@ parser.add_argument(
 def main(args):
     if args.modality.lower() == "flow":
         gulp_adapter = GenericGreyFlowDatasetAdapter(
-            str(args.in_folder), args.frame_size, args.flow_direction_x, args.flow_direction_y
+            str(args.in_folder), args.frame_size, args.class_folder, args.flow_direction_x, args.flow_direction_y
+        )
+    elif args.modality.lower() == "flow_onefolder":
+        gulp_adapter = GlobPatternGreyFlowDatasetAdapter(
+            str(args.in_folder), args.frame_size, args.class_folder, args.flow_x_filename_pattern, args.flow_y_filename_pattern,
         )
     elif args.modality.lower() == "rgb":
         gulp_adapter = GenericJpegDatasetAdapter(
-            str(args.in_folder), args.frame_size,
+            str(args.in_folder), args.frame_size, args.class_folder, 
         )
     else:
         raise ValueError("Modality '{}' not supported".format(args.modality))

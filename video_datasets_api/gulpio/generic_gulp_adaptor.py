@@ -29,6 +29,7 @@ class GenericJpegDatasetAdapter(AbstractDatasetAdapter):
         self,
         video_segment_dir: str,
         frame_size: int = -1,
+        class_folder: bool = False,
     ) -> None:
         """
         Args:
@@ -47,10 +48,38 @@ class GenericJpegDatasetAdapter(AbstractDatasetAdapter):
             frame_size:
                 Size of shortest edge of the frame, if not already this size then it will
                 be resized.
+
+            class_folder:
+                If set to True, the directory structure is expected to have classes.
+                The gulp key would be class_name/segment_name.
+
+                    video_segment_dir/
+                    ├── brush_hair 
+                    │   ├── segment_1
+                    │   │   ├── frame_0000000001.jpg
+                    │   │   ...
+                    │   │   ├── frame_0000012345.jpg
+                    │   ├── segment_2
+                    │   │   ├── frame_0000000001.jpg
+                    │   │   ...
+                    │   │   ├── frame_0000012345.jpg
+                    ├── catch 
+                    │   ├── segment_3
+                    │   │   ├── frame_0000000001.jpg
+                    │   │   ...
+                    │   │   ├── frame_0000012345.jpg
+                    │   ├── segment_4
+                    │   │   ├── frame_0000000001.jpg
+                    │   │   ...
+                    │   │   ├── frame_0000012345.jpg
+                    │   ...
+
         """
         self.video_segment_dir = video_segment_dir
         self.frame_size = int(frame_size)
-        self.segment_ids = GenericJpegDatasetAdapter._iterate_and_generate_keys(video_segment_dir)
+        self.class_folder = class_folder
+        self.segment_ids = GenericJpegDatasetAdapter._iterate_and_generate_keys(video_segment_dir, class_folder)
+
 
     def iter_data(self, slice_element=None) -> Iterator[Result]:
         """Get frames and metadata corresponding to segment
@@ -74,7 +103,8 @@ class GenericJpegDatasetAdapter(AbstractDatasetAdapter):
             folder = (
                 Path(self.video_segment_dir) / segment_id
             )
-            paths = natsorted(glob.glob(str(folder / '*.jpg')))
+            # Without glob.escape, it gives error when filename contains [ or ].
+            paths = natsorted(glob.glob(str(Path(glob.escape(folder)) / '*.jpg')))
             if self.frame_size > 0:
                 frames = list(resize_images(map(str, paths), self.frame_size))
                 meta["frame_size"] = frames[0].shape
@@ -90,11 +120,13 @@ class GenericJpegDatasetAdapter(AbstractDatasetAdapter):
             result = {"meta": meta, "frames": frames, "id": segment_id}
             yield result
 
+
     def __len__(self):
         return len(self.segment_ids)
 
+
     @staticmethod
-    def _iterate_and_generate_keys(video_segment_dir: str) -> List[str]:
+    def _iterate_and_generate_keys(video_segment_dir: str, class_folder: bool = False) -> List[str]:
         data = []
         dirs = os.listdir(video_segment_dir)
         for dirname in dirs:
@@ -103,7 +135,17 @@ class GenericJpegDatasetAdapter(AbstractDatasetAdapter):
                 logger.warning(f'Skipping non-directory {dirname}')
                 continue
 
-            data.append(dirname)
+            if class_folder:
+                segment_dirs = os.listdir(dirpath)
+                for segment_dirname in segment_dirs:
+                    segment_dirpath = os.path.join(dirpath, segment_dirname)
+                    if not os.path.isdir(segment_dirpath):
+                        logger.warning(f'Skipping non-directory {segment_dirpath}')
+                        continue
+
+                    data.append(os.path.join(dirname, segment_dirname))
+            else:
+                data.append(dirname)
 
         return data
 
@@ -111,11 +153,13 @@ class GenericJpegDatasetAdapter(AbstractDatasetAdapter):
 class GenericGreyFlowDatasetAdapter(GenericJpegDatasetAdapter):
     """
     Gulp directory with flow greyscale images. Note that all jpeg files have to be single channel.
+    X and Y direction have to be separated into different folders.
     """
     def __init__(
         self,
         video_segment_dir: str,
         frame_size: int = -1,
+        class_folder: bool = False,
         flow_direction_x = 'u',
         flow_direction_y = 'v'
     ) -> None:
@@ -142,15 +186,20 @@ class GenericGreyFlowDatasetAdapter(GenericJpegDatasetAdapter):
                 Size of shortest edge of the frame, if not already this size then it will
                 be resized.
 
+            class_folder:
+                If set to True, the directory structure is expected to have classes.
+                The gulp key would be class_name/segment_name.
+
             flow_direction_x:
                 The directory name of the x direction flow frames.
 
             flow_direction_y:
                 The directory name of the y direction flow frames.
         """
-        super().__init__(video_segment_dir, frame_size)
+        super().__init__(video_segment_dir, frame_size, class_folder)
         self.flow_direction_x = flow_direction_x
         self.flow_direction_y = flow_direction_y
+
 
     def iter_data(self, slice_element=None) -> Iterator[Result]:
         slice_element = slice_element or slice(0, len(self))
@@ -159,7 +208,8 @@ class GenericGreyFlowDatasetAdapter(GenericJpegDatasetAdapter):
 
             folder = Path(self.video_segment_dir) / segment_id 
             paths = {
-                axis: natsorted(glob.glob(str(folder / axis / '*.jpg')))
+                # Without glob.escape, it gives error when filename contains [ or ].
+                axis: natsorted(glob.glob(str(Path(glob.escape(folder)) / axis / '*.jpg')))
                 for axis in [self.flow_direction_x, self.flow_direction_y]
             }
 
@@ -189,6 +239,95 @@ class GenericGreyFlowDatasetAdapter(GenericJpegDatasetAdapter):
             result = {
                 "meta": meta,
                 "frames": list(_intersperse(frames[self.flow_direction_x], frames[self.flow_direction_y])),
+                "id": segment_id,
+            }
+            yield result
+
+
+class GlobPatternGreyFlowDatasetAdapter(GenericJpegDatasetAdapter):
+    """
+    Gulp directory with flow greyscale images. Note that all jpeg files have to be single channel.
+    Detect x, y direction by glob pattern instead of separate folders.
+    """
+    def __init__(
+        self,
+        video_segment_dir: str,
+        frame_size: int = -1,
+        class_folder: bool = False,
+        flow_x_filename_pattern = 'flow_x_*.jpg',
+        flow_y_filename_pattern = 'flow_y_*.jpg',   # Default value for open-mmlab/denseflow
+    ) -> None:
+        """
+        Args:
+            video_segment_dir:
+                Root directory containing segmented frames::
+
+                    video_segment_dir/
+                    ├── segment_1 
+                    │   ├── flow_x_00000.jpg
+                    │   ...
+                    │   ├── flow_x_12345.jpg
+                    │   ...
+                    │   ├── flow_y_00000.jpg
+                    │   ...
+                    │   ├── flow_y_12345.jpg
+
+                "segment_1" will be the gulp key, and frames can be in any name. It will just sort all the jpegs and use them in order.
+
+            frame_size:
+                Size of shortest edge of the frame, if not already this size then it will
+                be resized.
+
+            class_folder:
+                If set to True, the directory structure is expected to have classes.
+                The gulp key would be class_name/segment_name.
+
+            flow_x_filename_pattern, flow_y_filename_pattern:
+                File names in bash pattern to search.
+        """
+        super().__init__(video_segment_dir, frame_size, class_folder)
+        self.flow_x_filename_pattern = flow_x_filename_pattern
+        self.flow_y_filename_pattern = flow_y_filename_pattern
+
+
+    def iter_data(self, slice_element=None) -> Iterator[Result]:
+        slice_element = slice_element or slice(0, len(self))
+        for segment_id in self.segment_ids[slice_element]:
+            meta = {}
+
+            folder = Path(self.video_segment_dir) / segment_id 
+            paths = {
+                # Without glob.escape, it gives error when filename contains [ or ].
+                'x': natsorted(glob.glob(str(Path(glob.escape(folder)) / self.flow_x_filename_pattern))),
+                'y': natsorted(glob.glob(str(Path(glob.escape(folder)) / self.flow_y_filename_pattern))),
+            }
+
+            basenames = {
+                axis: [os.path.basename(path) for path in paths[axis]]
+                for axis in ['x', 'y']
+            }
+
+            assert basenames['x'] == basenames['y'], f'{folder} does not contain the same frames for x and y.'
+
+            frames = {}
+            if self.frame_size > 0:
+                for axis in ['x', 'y']:
+                    frames[axis] = list(resize_images(map(str, paths[axis]), self.frame_size))
+                meta["frame_size"] = frames['x'][0].shape
+            else:
+                for axis in ['x', 'y']:
+                    frames[axis] = paths[axis]
+                # Load only one file to check the frame size.
+                with open(str(paths['x'][0]), 'rb') as f:
+                    first_frame_jpeg = f.read()
+                h, w, colour, _ = decode_jpeg_header(first_frame_jpeg)
+                assert colour == 'Gray', f'The colourspace of the image {paths["x"][0]} is {colour}, but it needs to be "gray"'
+                meta["frame_size"] = (h, w)
+
+            meta["num_frames"] = len(frames['x'])
+            result = {
+                "meta": meta,
+                "frames": list(_intersperse(frames['x'], frames['y'])),
                 "id": segment_id,
             }
             yield result
