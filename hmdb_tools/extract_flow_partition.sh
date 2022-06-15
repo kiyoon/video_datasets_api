@@ -31,6 +31,8 @@ start_idx="$((divide_job_index * num_part_segments + 1))"
 if [[ $divide_job_count -eq $((divide_job_index + 1)) ]]
 then
 	end_idx='$'
+	# update number of segments because it is different for the last process.
+	num_part_segments="$((num_all_segments / divide_job_count + num_all_segments % num_part_segments))"
 else
 	end_idx="$(( (divide_job_index+1) * num_part_segments ))"
 fi
