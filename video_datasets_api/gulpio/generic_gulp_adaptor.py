@@ -307,7 +307,7 @@ class GlobPatternGreyFlowDatasetAdapter(GenericJpegDatasetAdapter):
                 for axis in ['x', 'y']
             }
 
-            assert basenames['x'] == basenames['y'], f'{folder} does not contain the same frames for x and y.'
+            assert len(basenames['x']) == len(basenames['y']), f'{folder} does not contain the same number of frames for x and y.'
 
             frames = {}
             if self.frame_size > 0:
