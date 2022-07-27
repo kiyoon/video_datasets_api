@@ -19,4 +19,5 @@ setup(
         'gulpio2 @ git+https://github.com/kiyoon/GulpIO2',
         'natsort',
         ],
+    include_package_data = True,    # required for non-code files in the package to be installed together.
 )
