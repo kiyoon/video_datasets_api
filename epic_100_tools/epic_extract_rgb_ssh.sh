@@ -15,8 +15,8 @@ output_dir="$4"
 md5_csv="$5"
 
 
-epic55_flow_tars=$(cat "$md5_csv" | grep /flow/ | awk -F, '{print $2}' | sort)
-epic100_flow_tars=$(cat "$md5_csv" | grep /flow_frames/ | awk -F, '{print $2}' | sort)
+epic55_rgb_tars=$(cat "$md5_csv" | grep /rgb/ | awk -F, '{print $2}' | sort)
+epic100_rgb_tars=$(cat "$md5_csv" | grep /rgb_frames/ | awk -F, '{print $2}' | sort)
 
 
 num_errors=0
@@ -39,7 +39,7 @@ do
 		error_videos="$error_videos$tarfile\n"
 	fi
 	
-done <<< "$epic55_flow_tars"
+done <<< "$epic55_rgb_tars"
 
 while read tarfile
 do
@@ -58,7 +58,7 @@ do
 		error_videos="$error_videos$tarfile\n"
 	fi
 	
-done <<< "$epic100_flow_tars"
+done <<< "$epic100_rgb_tars"
 
 
 if [ $num_errors -gt 0 ]
