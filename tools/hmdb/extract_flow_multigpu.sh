@@ -4,7 +4,7 @@ if [ $# -lt 4 ]
 then
 	echo "usage: $0 [frames_dir] [output_dir] [gpu_arch (turing/pascal)] [gpu_devices..]"
 	echo "Extracts optical flow using docker."
-	echo "Frames has to be extracted as frames and the directory name should end with '.avi'."
+	echo "Frames has to be extracted as frames."
 	echo "It will create a screen session and execute multiple processes to process different parts of the dataset."
 	exit 1
 fi

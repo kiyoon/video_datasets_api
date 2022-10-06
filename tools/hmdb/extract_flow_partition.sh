@@ -21,7 +21,7 @@ mkdir -p "$output_dir"
 bash_start_time=$(date +%s.%N)
 
 
-all_videos=$(find "$input_dir" -mindepth 2 -maxdepth 2 -name "*.avi" -type f | sort)
+all_videos=$(find "$input_dir" -mindepth 2 -maxdepth 2 -type f | sort)
 num_all_segments=$(echo "$all_videos" | wc -l)
 num_part_segments="$((num_all_segments / divide_job_count))"
 
