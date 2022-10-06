@@ -8,8 +8,9 @@ then
 	exit 1
 fi
 
-input_dir="$1"
-output_dir="$2"
+# Docker needs absolute path
+input_dir="$(realpath $1)"
+output_dir="$(realpath $2)"
 divide_job_count="$3"
 divide_job_index="$4"
 gpu_device="$5"
@@ -21,7 +22,7 @@ mkdir -p "$output_dir"
 bash_start_time=$(date +%s.%N)
 
 
-all_videos=$(find "$input_dir" -mindepth 2 -maxdepth 2 -type f | sort)
+all_videos=$(find "$input_dir" -mindepth 2 -maxdepth 2 -name "*.avi" -type f | sort)
 num_all_segments=$(echo "$all_videos" | wc -l)
 num_part_segments="$((num_all_segments / divide_job_count))"
 
@@ -36,6 +37,7 @@ else
 	end_idx="$(( (divide_job_index+1) * num_part_segments ))"
 fi
 
+echo "all videos: $all_videos"
 echo "Number of all videos: $num_all_segments"
 echo "Number of videos to be processed: $num_part_segments"
 echo "Video indices to be processed: $start_idx to $end_idx"
