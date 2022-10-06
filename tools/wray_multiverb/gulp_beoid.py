@@ -7,8 +7,8 @@ from multiprocessing import cpu_count
 from pathlib import Path
 
 from gulpio2 import GulpIngestor
-from video_datasets_api.wray_multiverb.beoid_gulp_adaptor import WrayBEOIDAdapter
-from video_datasets_api.wray_multiverb.beoid import read_all_annotations
+from video_datasets_api.wray_multiverb.beoid_gulp_adaptor import WrayBEOIDAdapter, WrayBEOIDFlowDatasetAdapter
+from video_datasets_api.wray_multiverb.beoid import read_all_annotations_thresholded
 
 
 parser = argparse.ArgumentParser(
@@ -31,8 +31,6 @@ parser.add_argument(
     type=Path,
 )
 parser.add_argument("--modality", choices=["flow", "rgb"], default='rgb')
-parser.add_argument("--flow_direction_x", default='u', help="Flow directory name for x direction.")
-parser.add_argument("--flow_direction_y", default='v', help="Flow directory name for x direction.")
 parser.add_argument("--frame_size", type=int, default=-1, help="Shorter side of the frame size. -1 bypasses resizing.")
 parser.add_argument(
     "--segments_per_chunk",
@@ -51,9 +49,14 @@ parser.add_argument(
 
 def main(args):
     if args.modality.lower() == "flow":
-        raise NotImplementedError()
+        segments_info = read_all_annotations_thresholded(str(args.wray_annotations_root_dir), str(args.BEOID_annotations_root_dir))
+        gulp_adapter = WrayBEOIDFlowDatasetAdapter(
+            str(args.frames_folder),
+            segments_info,
+            args.frame_size,
+        )
     elif args.modality.lower() == "rgb":
-        segments_info = read_all_annotations(str(args.wray_annotations_root_dir), str(args.BEOID_annotations_root_dir))
+        segments_info = read_all_annotations_thresholded(str(args.wray_annotations_root_dir), str(args.BEOID_annotations_root_dir))
         gulp_adapter = WrayBEOIDAdapter(
             str(args.frames_folder),
             segments_info,
