@@ -1,4 +1,3 @@
-import pandas
 import pickle
 import os
 
@@ -70,5 +69,42 @@ def get_verb_uid2label_dict(annotations_root_dir: str, narration_id_to_video_id 
 
         narration_id_to_label[narration_id] = verb_label
         uid2label[uid] = verb_label
+
+    return narration_id_to_label, uid2label
+
+
+def get_noun_uid2label_dict(annotations_root_dir: str, narration_id_to_video_id = None):
+    train_pkl = os.path.join(annotations_root_dir, 'EPIC_100_train.pkl')
+    val_pkl = os.path.join(annotations_root_dir, 'EPIC_100_validation.pkl')
+
+    if narration_id_to_video_id is None:
+        narration_id_to_video_id, _ = epic_narration_id_to_unique_id(annotations_root_dir)
+
+    narration_id_to_label = {}
+    uid2label = {}
+
+    with open(train_pkl, 'rb') as f:
+        train_labels = pickle.load(f)
+    
+    num_videos = len(train_labels.index)
+    for index in range(num_videos):
+        narration_id = train_labels.index[index]
+        uid = narration_id_to_video_id[narration_id]
+        noun_label = train_labels.noun_class.iloc[index]
+
+        narration_id_to_label[narration_id] = noun_label
+        uid2label[uid] = noun_label
+
+    with open(val_pkl, 'rb') as f:
+        val_labels = pickle.load(f)
+
+    num_videos = len(val_labels.index)
+    for index in range(num_videos):
+        narration_id = val_labels.index[index]
+        uid = narration_id_to_video_id[narration_id]
+        noun_label = val_labels.noun_class.iloc[index]
+
+        narration_id_to_label[narration_id] = noun_label
+        uid2label[uid] = noun_label
 
     return narration_id_to_label, uid2label
