@@ -3,7 +3,7 @@ NUM_NOUN_CLASSES = 300
 
 
 # The ordering follows the official website's (https://epic-kitchens.github.io/2022) stats graph.
-verb_categories = ['retrieve', 'leave', 'clean', 'access', 'block', 'merge', 'split', 'manipulate', 'transition', 'monitor', 'sense', 'distribute', 'other']
+verb_categories = ['retrieve', 'leave', 'clean', 'access', 'block', 'merge', 'split', 'manipulate', 'transition', 'monitor', 'sense', 'distribute', 'order']
 noun_categories = ['appliances', 'crockery', 'containers', 'cutlery', 'vegetables', 'cookware', 'utensils', 'furniture', 'cleaning', 'storage', 'baked goods and grains', 'spices and herbs and sauces', 'materials', 'meat and substitutes', 'rubbish', 'dairy and eggs', 'prepared food', 'hand', 'drinks', 'fruits and nuts', 'other']
 
 
