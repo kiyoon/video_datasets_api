@@ -32,6 +32,6 @@ def EPIC100_get_class_label_to_category_index(annotations_root_dir: str, verbnou
     class_to_category = []
     for index, row in classes.iterrows():
         assert index == int(row['id'])
-        class_to_category.append(category_str_to_index(row['category']))
+        class_to_category.append(category_str_to_index[row['category']])
 
     return class_to_category
