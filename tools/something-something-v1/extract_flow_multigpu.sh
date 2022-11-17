@@ -9,7 +9,7 @@ then
 	exit 1
 fi
 
-script_dir=$(dirname $(realpath -s $0))
+script_dir=$(dirname "$(realpath -s "$0")")
 input_dir="$1"
 output_dir="$2"
 gpu_arch="$3"
