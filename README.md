@@ -1,5 +1,5 @@
 # video_datasets_api
-Video datasets (HMDB-51, EPIC-Kitchens, Something-Something-V1, etc.) tools and API
+Video datasets (HMDB-51, EPIC-Kitchens-55/100, Something-Something-V1/V2, etc.) tools and API
 
 **Key features**  
 - Extract videos into frames
