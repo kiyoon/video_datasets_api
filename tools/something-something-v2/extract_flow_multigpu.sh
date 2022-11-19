@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ $# -lt 4 ]
+if [ $# -lt 5 ]
 then
 	echo "usage: $0 [frames_dir] [output_dir] [gpu_arch (turing/pascal)] [jobs_per_gpu] [gpu_devices..] "
 	echo "Extracts optical flow using docker."
