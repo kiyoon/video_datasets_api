@@ -2,22 +2,26 @@
 
 if [ $# -lt 6 ]
 then
-	echo "usage: $0 [frames_dir] [output_dir] [divide_job_count] [divide_job_index] [gpu_device] [gpu_arch (turing/pascal)]"
+	echo "usage: $0 [frames_dir] [output_dir] [denseflow_step (e.g. 1)] [divide_job_count] [divide_job_index] [gpu_device] [gpu_arch (ampere(30xx)/turing(20xx)/pascal(10xx))]"
 	echo "Extracts optical flow using docker."
 	echo "Videos has to be extracted as frames"
 	echo "divide_job_count > 1 will execute it to only part of the data. divide_job_index should be 0, 1, ..., divide_job_count-1"
+	echo "It supports saving the progress and skipping all files that are already processed."
 	exit 1
 fi
 
 input_dir="$1"
 output_dir="$2"
-divide_job_count="$3"
-divide_job_index="$4"
-gpu_device="$5"
-gpu_arch="$6"
+denseflow_step="$3"
+divide_job_count="$4"
+divide_job_index="$5"
+gpu_device="$6"
+gpu_arch="$7"
 
 
 mkdir -p "$output_dir"
+
+denseflow_success_txt="$output_dir/denseflow_success.txt"
 
 bash_start_time=$(date +%s.%N)
 
@@ -58,10 +62,20 @@ do
 	
 	relative_path=$(realpath --relative-to="$input_dir" "$line")
 	relative_dir=$(dirname "$relative_path")
-	echo "$relative_path"
+
+
+	if grep -Fxq "$relative_path" "$denseflow_success_txt"
+	then
+		# code if found
+		echo "Processing $relative_path"
+	else
+		# code if not found
+		echo "Skipping (already processed): $relative_path"
+		continue
+	fi
 
 	mkdir -p "$output_dir/$relative_dir"
-	docker run --gpus "device=$gpu_device" --rm -u $UID:$UID -v "$video_dir:/input" -v "$output_dir/$relative_dir:/output" kiyoon/denseflow:$gpu_arch "/input/$video_name" -b=20 -a=tvl1 -s=1 -if -v -o=/output
+	docker run --gpus "device=$gpu_device" --rm -u $UID:$UID -v "$video_dir:/input" -v "$output_dir/$relative_dir:/output" kiyoon/denseflow:$gpu_arch "/input/$video_name" -b=20 -a=tvl1 -s=$denseflow_step -if -v -o=/output
 	RC=$?
 	if [ "${RC}" -ne "0" ]; then
 		# Do something to handle the error.
@@ -69,6 +83,8 @@ do
 		echo " ERROR OCCURED WHILE PROCESSING THE VIDEO"
 		(( num_errors += 1 ))
 		error_videos="$error_videos$line\n"
+	else
+		echo "$relative_path" >> "$denseflow_success_txt"
 	fi
 
 	bash_end_time=$(date +%s.%N)
