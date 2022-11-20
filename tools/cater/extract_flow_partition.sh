@@ -64,15 +64,22 @@ do
 	relative_dir=$(dirname "$relative_path")
 
 
-	if grep -Fxq "$relative_path" "$denseflow_success_txt"
-	then
-		# code if found
-		echo "Processing $relative_path"
-	else
-		# code if not found
-		echo "Skipping (already processed): $relative_path"
-		continue
-	fi
+	# Check if already processed
+	case `grep -Fx "$relative_path" "$denseflow_success_txt" >/dev/null; echo $?` in
+		0)
+    		# code if found
+			echo "Skipping (already processed): $relative_path"
+			continue
+    	;;
+  		1)
+    		# code if not found
+			echo "Processing $relative_path"
+    	;;
+  		*)
+    		# code if an error occurred
+			echo "Processing $relative_path"
+    	;;
+	esac
 
 	mkdir -p "$output_dir/$relative_dir"
 	docker run --gpus "device=$gpu_device" --rm -u $UID:$UID -v "$video_dir:/input" -v "$output_dir/$relative_dir:/output" kiyoon/denseflow:$gpu_arch "/input/$video_name" -b=20 -a=tvl1 -s=$denseflow_step -if -v -o=/output
