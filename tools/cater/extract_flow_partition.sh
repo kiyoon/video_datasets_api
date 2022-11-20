@@ -69,6 +69,7 @@ do
 		0)
     		# code if found
 			echo "Skipping (already processed): $relative_path"
+			(( index++ ))
 			continue
     	;;
   		1)
