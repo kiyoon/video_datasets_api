@@ -1,8 +1,8 @@
 #!/bin/bash
 
-if [ $# -lt 6 ]
+if [ $# -lt 7 ]
 then
-	echo "usage: $0 [frames_dir] [output_dir] [denseflow_step (e.g. 1)] [divide_job_count] [divide_job_index] [gpu_device] [gpu_arch (ampere(30xx)/turing(20xx)/pascal(10xx))]"
+	echo "usage: $0 [frames_dir] [output_dir] [denseflow_alg (e.g. tvl1, nv)] [denseflow_step (e.g. 1)] [divide_job_count] [divide_job_index] [gpu_device] [gpu_arch (ampere(30xx)/turing(20xx)/pascal(10xx))]"
 	echo "Extracts optical flow using docker."
 	echo "Videos has to be extracted as frames"
 	echo "divide_job_count > 1 will execute it to only part of the data. divide_job_index should be 0, 1, ..., divide_job_count-1"
@@ -12,11 +12,12 @@ fi
 
 input_dir="$1"
 output_dir="$2"
-denseflow_step="$3"
-divide_job_count="$4"
-divide_job_index="$5"
-gpu_device="$6"
-gpu_arch="$7"
+denseflow_alg="$3"
+denseflow_step="$4"
+divide_job_count="$5"
+divide_job_index="$6"
+gpu_device="$7"
+gpu_arch="$8"
 
 
 mkdir -p "$output_dir"
@@ -83,7 +84,7 @@ do
 	esac
 
 	mkdir -p "$output_dir/$relative_dir"
-	docker run --gpus "device=$gpu_device" --rm -u $UID:$UID -v "$video_dir:/input" -v "$output_dir/$relative_dir:/output" kiyoon/denseflow:$gpu_arch "/input/$video_name" -b=20 -a=tvl1 -s=$denseflow_step -if -v -o=/output
+	docker run --gpus "device=$gpu_device" --rm -u $UID:$UID -v "$video_dir:/input" -v "$output_dir/$relative_dir:/output" kiyoon/denseflow:$gpu_arch "/input/$video_name" -b=20 -a=$denseflow_alg -s=$denseflow_step -if -v -o=/output
 	RC=$?
 	if [ "${RC}" -ne "0" ]; then
 		# Do something to handle the error.
